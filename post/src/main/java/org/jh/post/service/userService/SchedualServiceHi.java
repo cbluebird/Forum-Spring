@@ -8,6 +8,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(value = "user")
 public interface SchedualServiceHi {
 
-    @RequestMapping(value = "/user/hi", method = RequestMethod.GET)
+    @RequestMapping(value = "/user/login", method = RequestMethod.GET)
     String sayHiFromClientOne(@RequestParam("name") String name);
 }
