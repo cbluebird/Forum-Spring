@@ -33,3 +33,5 @@ build/
 
 ### Config ###
 application.yaml
+
+logback-spring.xml

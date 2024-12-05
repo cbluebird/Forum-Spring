@@ -14,7 +14,7 @@ CREATE TABLE `user`
     `password`     varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT 'sha256 密码',
     `status`       tinyint                                                       NOT NULL DEFAULT 1 COMMENT '状态，1 正常，2 注销 3 禁言',
     `avatar`       varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '用户头像',
-    `user_type_id` tinyint                                                       NOT NULL DEFAULT 1 COMMENT '用户类型，1 普通用户，2 管理员 3 官方认证',
+    `type` tinyint NOT NULL DEFAULT 1 COMMENT '用户类型，1 普通用户，2 管理员 3 官方认证',
     `email`        varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci  NOT NULL DEFAULT '' COMMENT '邮箱',
     `created_on`   DATETIME                                                      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `modified_on`  DATETIME                                                      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
@@ -22,7 +22,7 @@ CREATE TABLE `user`
     PRIMARY KEY (`id`),
     UNIQUE KEY `idx_user_username` (`username`),
     UNIQUE KEY `idx_user_phone` (`phone`),
-    KEY `idx_user_type` (`user_type_id`)
+    UNIQUE KEY `idx_user_email` (`email`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
@@ -44,7 +44,7 @@ CREATE TABLE `post`
     `upvote_count`     BIGINT                                                       NOT NULL DEFAULT '0' COMMENT '点赞数',
     `view_count`       BIGINT                                                       NOT NULL DEFAULT '0' COMMENT '浏览数',
     `share_count`      BIGINT                                                       NOT NULL DEFAULT '0' COMMENT '分享数',
-    `visibility`       tinyint                                                      NOT NULL DEFAULT '0' COMMENT '可见性: 0 私密 1 订阅可见 2 好友可见 3 关注可见 4 公开',
+    `visibility` tinyint NOT NULL DEFAULT '0' COMMENT '可见性: 0 私密 1 关注可见 2 好友可见 3 公开',
     `is_top`           tinyint                                                      NOT NULL DEFAULT '0' COMMENT '是否置顶',
     `is_essence`       tinyint                                                      NOT NULL DEFAULT '0' COMMENT '是否精华',
     `is_self_hot`      tinyint                                                      NOT NULL DEFAULT '0' COMMENT '是否为个人页面的置顶',
@@ -181,7 +181,7 @@ CREATE TABLE `message`
     `id`               BIGINT                                                        NOT NULL AUTO_INCREMENT COMMENT '消息通知 ID',
     `sender_user_id`   BIGINT                                                        NOT NULL DEFAULT '0' COMMENT '发送方用户 ID',
     `receiver_user_id` BIGINT                                                        NOT NULL DEFAULT '0' COMMENT '接收方用户 ID',
-    `message_type_id`  tinyint                                                       NOT NULL DEFAULT '1' COMMENT '通知类型，1 动态，2 评论，3 回复，4 私信，99 系统通知',
+    `message_type_id` tinyint NOT NULL DEFAULT '1' COMMENT '通知类型，1 动态，2 评论，3 回复，4 私信，5 系统通知',
     `content`          varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '详细内容',
     `is_read`          tinyint                                                       NOT NULL DEFAULT '0' COMMENT '是否已读',
     `created_on`       DATETIME                                                      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
