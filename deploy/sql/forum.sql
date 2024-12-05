@@ -58,7 +58,7 @@ CREATE TABLE `post`
     KEY `idx_post_visibility` (`visibility`),
     KEY `idx_post_created_on` (`created_on`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 1080017989
+  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='冒泡/文章';
 
@@ -76,7 +76,7 @@ CREATE TABLE `post_content`
     PRIMARY KEY (`id`),
     KEY `idx_post_content_post_id` (`post_id`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 180022546
+  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='冒泡/文章内容';
 
@@ -94,7 +94,7 @@ CREATE TABLE `categories`
     `quote_num`   BIGINT                                                        NOT NULL DEFAULT '0' COMMENT '引用数',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 9000065
+  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='标签';
 
@@ -111,7 +111,7 @@ CREATE TABLE `post_setting`
     PRIMARY KEY (`id`),
     KEY `idx_post_setting_user_id` (`user_id`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 180022546
+  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='post 权限设置';
 
@@ -125,7 +125,7 @@ CREATE TABLE `post_time_limit`
     `content` varchar(32) NOT NULL DEFAULT '' COMMENT '内容',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 180022546
+  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='post 时间限制';
 
@@ -139,7 +139,7 @@ CREATE TABLE `post_reply_limit`
     `content` varchar(32) NOT NULL DEFAULT '' COMMENT '内容',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 180022546
+  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='post 回复限制';
 
@@ -168,7 +168,7 @@ CREATE TABLE `reply`
     KEY `idx_reply_user_id` (`user_id`),
     KEY `idx_reply_created_on` (`created_on`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 6001736
+  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='评论';
 
@@ -190,7 +190,7 @@ CREATE TABLE `message`
     KEY `idx_message_is_read` (`is_read`),
     KEY `idx_message_type` (`message_type_id`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 16000033
+  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='消息通知';
 
@@ -206,7 +206,7 @@ CREATE TABLE `message_type`
     PRIMARY KEY (`id`),
     UNIQUE KEY `idx_message_type_name` (`name`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 16000033
+  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='消息通知类型';
 
@@ -225,7 +225,7 @@ CREATE TABLE `post_collection`
     KEY `idx_post_collection_post_id` (`post_id`),
     KEY `idx_post_collection_user_id` (`user_id`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 6000012
+  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='文章收藏';
 
@@ -244,7 +244,7 @@ CREATE TABLE `post_star`
     KEY `idx_post_star_post_id` (`post_id`),
     KEY `idx_post_star_user_id` (`user_id`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 6000028
+  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='冒泡/文章点赞';
 
@@ -264,7 +264,7 @@ CREATE TABLE `tag`
     KEY `idx_tag_user_id` (`user_id`),
     KEY `idx_tag_quote_num` (`quote_num`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 9000065
+  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='标签';
 
@@ -280,7 +280,7 @@ CREATE TABLE `post_tag`
     PRIMARY KEY (`id`),
     UNIQUE KEY `idx_post_tag_post_tag` (`post_id`, `tag_id`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 9000065
+  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='文章的标签';
 
@@ -298,7 +298,7 @@ CREATE TABLE `shield_tag`
     UNIQUE KEY `idx_shield_tag_user_tag` (`user_id`, `tag_id`),
     KEY `idx_shield_user_id` (`user_id`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 9000065
+  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='屏蔽的标签';
 
@@ -315,7 +315,7 @@ CREATE TABLE `shield_user`
     PRIMARY KEY (`id`),
     UNIQUE KEY `idx_shield_user_user` (`user_id`, `shield_user_id`)
 ) ENGINE = InnoDB
-  AUTO_INCREMENT = 9000065
+  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='屏蔽的用户';
 
@@ -333,6 +333,7 @@ CREATE TABLE `following`
     PRIMARY KEY (`id`),
     UNIQUE KEY `idx_following_user_follow` (`user_id`, `follow_id`)
 ) ENGINE = InnoDB
+  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci;
 
@@ -349,6 +350,7 @@ CREATE TABLE `following_group`
     PRIMARY KEY (`id`),
     UNIQUE KEY `idx_following_group_user_name` (`user_id`, `name`)
 ) ENGINE = InnoDB
+  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='联系人分组';
 
@@ -365,6 +367,7 @@ CREATE TABLE `notice`
     PRIMARY KEY (`id`),
     KEY `idx_notice_user_id` (`user_id`)
 ) ENGINE = InnoDB
+  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='通知';
 
@@ -384,6 +387,7 @@ CREATE TABLE `report`
     PRIMARY KEY (`id`),
     UNIQUE KEY `idx_report_user_post` (`user_id`, `post_id`)
 ) ENGINE = InnoDB
+  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='举报';
 
@@ -399,5 +403,6 @@ CREATE TABLE `report_type`
     PRIMARY KEY (`id`),
     UNIQUE KEY `idx_report_type_name` (`name`)
 ) ENGINE = InnoDB
+  AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='举报类型';
