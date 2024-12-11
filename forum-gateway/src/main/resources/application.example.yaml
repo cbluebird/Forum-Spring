@@ -29,6 +29,10 @@ spring:
           uri: lb://forum-notice
           predicates:
             - Path=/api/notice/**
+        - id: forum-oss
+          uri: lb://forum-oss
+          predicates:
+            - Path=/api/oss/**
   data:
     redis:
       host: localhost

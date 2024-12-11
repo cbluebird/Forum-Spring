@@ -22,6 +22,8 @@ public enum ErrorCode {
     USER_NOT_FOUND(20402, "用户不存在"),
     POST_SERV_ERROR(20500, "POST_SERV异常"),
     NOTICE_SERV_ERROR(20600, "NOTICE_SERV异常"),
+    OSS_SERV_ERROR(20700, "OSS_SERV异常"),
+    OSS_UPLOAD_ERROR(20701, "上传失败"),
     ;
 
     private final Integer code;

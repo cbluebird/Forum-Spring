@@ -1,0 +1,16 @@
+server:
+  port: 18085
+spring:
+  application:
+    name: forum-oss
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+oss:
+  qiniu:
+    domain: https://img.jh.org
+    path: forum/
+    access-key: access-key
+    secret-key: secret-key
+    bucket-name: bucket-name
