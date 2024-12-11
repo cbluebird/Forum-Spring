@@ -22,6 +22,7 @@
         <module>forum-user</module>
         <module>forum-post</module>
         <module>forum-notice</module>
+        <module>forum-oss</module>
     </modules>
 
     <properties>
@@ -35,6 +36,7 @@
         <mybatis-plus.version>3.5.9</mybatis-plus.version>
         <loki-logback-appender.version>1.5.2</loki-logback-appender.version>
         <sa-token.version>1.39.0</sa-token.version>
+        <qiniu-java-sdk.version>7.17.0</qiniu-java-sdk.version>
     </properties>
 
     <dependencies>
@@ -135,6 +137,11 @@
                 <groupId>cn.dev33</groupId>
                 <artifactId>sa-token-redis-jackson</artifactId>
                 <version>${sa-token.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.qiniu</groupId>
+                <artifactId>qiniu-java-sdk</artifactId>
+                <version>${qiniu-java-sdk.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
