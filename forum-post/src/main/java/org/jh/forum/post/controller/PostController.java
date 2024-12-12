@@ -45,6 +45,7 @@ public class PostController {
 
     @PutMapping("/{id}")
     public void updatePost(@RequestBody @Validated Post post) {
+        post.setModifiedOn(new Date());
         postService.updateById(post);
     }
 

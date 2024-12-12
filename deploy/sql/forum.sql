@@ -246,7 +246,7 @@ CREATE TABLE `post_star`
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_general_ci COMMENT ='冒泡/文章点赞';
+  COLLATE = utf8mb4_general_ci COMMENT ='文章点赞';
 
 -- ----------------------------
 -- Table structure for tag
