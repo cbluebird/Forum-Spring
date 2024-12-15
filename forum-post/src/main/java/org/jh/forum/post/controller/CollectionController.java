@@ -2,6 +2,7 @@ package org.jh.forum.post.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.jh.forum.post.dto.CollectDTO;
 import org.jh.forum.post.model.Collection;
 import org.jh.forum.post.model.Post;
 import org.jh.forum.post.service.ICollectionService;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 
 @Validated
 @RestController
-@RequestMapping("/api/post/collection")
+@RequestMapping("/api/post/collect")
 public class CollectionController {
 
     @Autowired
@@ -26,15 +27,16 @@ public class CollectionController {
     private IPostService postService;
 
     @PostMapping("/add")
-    public void addCollection(@RequestBody Post post, @RequestHeader("X-User-ID") String userId) {
+    public void addCollection(@RequestBody CollectDTO collectReq, @RequestHeader("X-User-ID") String userId) {
+        Post post = postService.getById(collectReq.getPostId());
         Long userIdLong = Long.valueOf(userId);
         QueryWrapper<Collection> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("post_id", post.getId()).eq("user_id", userIdLong);
+        queryWrapper.eq("post_id", collectReq.getPostId()).eq("user_id", userIdLong);
 
         Collection existingCollection = collectionService.getOne(queryWrapper);
         if (existingCollection == null) {
             Collection collection = new Collection();
-            collection.setPostId(post.getId());
+            collection.setPostId(collectReq.getPostId());
             collection.setUserId(userIdLong);
             collection.setCreatedOn(new Date());
             collectionService.save(collection);

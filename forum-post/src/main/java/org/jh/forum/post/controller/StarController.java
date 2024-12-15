@@ -2,6 +2,7 @@ package org.jh.forum.post.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.jh.forum.post.dto.StarDTO;
 import org.jh.forum.post.model.Post;
 import org.jh.forum.post.model.Star;
 import org.jh.forum.post.service.IPostService;
@@ -26,15 +27,16 @@ public class StarController {
     private IPostService postService;
 
     @PostMapping("/add")
-    public void likePost(@RequestBody Post post, @RequestHeader("X-User-ID") String userId) {
+    public void likePost(@RequestBody StarDTO starReq, @RequestHeader("X-User-ID") String userId) {
+        Post post = postService.getById(starReq.getPostId());
         Long userIdLong = Long.valueOf(userId);
         QueryWrapper<Star> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("post_id", post.getId()).eq("user_id", userIdLong);
+        queryWrapper.eq("post_id", starReq.getPostId()).eq("user_id", userIdLong);
 
         Star existingStar = starService.getOne(queryWrapper);
         if (existingStar == null) {
             Star star = new Star();
-            star.setPostId(post.getId());
+            star.setPostId(starReq.getPostId());
             star.setUserId(userIdLong);
             star.setCreatedOn(new Date());
             starService.save(star);
