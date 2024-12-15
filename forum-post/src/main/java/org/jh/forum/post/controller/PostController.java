@@ -3,9 +3,12 @@ package org.jh.forum.post.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.jh.forum.post.dto.PostContentDTO;
 import org.jh.forum.post.dto.PostDTO;
 import org.jh.forum.post.model.Post;
+import org.jh.forum.post.model.PostContent;
 import org.jh.forum.post.service.ICategoryService;
+import org.jh.forum.post.service.IPostContentService;
 import org.jh.forum.post.service.IPostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -24,6 +27,9 @@ public class PostController {
     @Autowired
     private ICategoryService categoryService;
 
+    @Autowired
+    private IPostContentService postContentService;
+
     @PostMapping("/add")
     public void addPost(@RequestHeader("X-User-ID") String userId, @RequestBody @Validated PostDTO postDTO) {
         Post post = new Post();
@@ -36,6 +42,20 @@ public class PostController {
         post.setCreatedOn(new Date());
 
         postService.save(post);
+        Long postId = post.getId();
+
+        // Loop through the content array in PostDTO
+        for (PostContentDTO contentDTO : postDTO.getContent()) {
+            PostContent postContent = new PostContent();
+            postContent.setPostId(postId);
+            postContent.setContent(contentDTO.getContent());
+            postContent.setType(contentDTO.getType());
+            postContent.setIsDel(false);
+
+            // Save the post content
+            postContentService.save(postContent);
+        }
+
     }
 
     @DeleteMapping("/{id}")
