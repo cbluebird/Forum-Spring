@@ -1,4 +1,4 @@
-package org.jh.forum.oss.VO;
+package org.jh.forum.oss.vo;
 
 import lombok.Data;
 

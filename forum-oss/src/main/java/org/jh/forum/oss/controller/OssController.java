@@ -2,9 +2,9 @@ package org.jh.forum.oss.controller;
 
 import org.jh.forum.common.api.ErrorCode;
 import org.jh.forum.common.exception.BizException;
-import org.jh.forum.oss.VO.BatchUploadVO;
-import org.jh.forum.oss.VO.UploadVO;
 import org.jh.forum.oss.service.IOssService;
+import org.jh.forum.oss.vo.BatchUploadVO;
+import org.jh.forum.oss.vo.UploadVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
