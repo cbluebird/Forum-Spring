@@ -7,6 +7,19 @@ spring:
     nacos:
       discovery:
         server-addr: localhost:8848
+  data:
+    redis:
+      host:
+      port:
+      password:
+      database: 0
+      timeout: 2000
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 0
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver

@@ -58,5 +58,9 @@
             <groupId>com.github.loki4j</groupId>
             <artifactId>loki-logback-appender</artifactId>
         </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+        </dependency>
     </dependencies>
 </project>
