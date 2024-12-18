@@ -36,8 +36,8 @@ public class UserController {
         userService.save(user);
     }
 
-    @GetMapping
-    public User getUserByUsername(@RequestParam("username") @NotBlank(message = "用户名不能为空") String username) {
+    @GetMapping("/username/{username}")
+    public User getUserByUsername(@PathVariable("username") @NotBlank(message = "用户名不能为空") String username) {
         User user = userService.getOne(new QueryWrapper<User>().eq("username", username));
         if (user == null) {
             throw new BizException(ErrorCode.USER_NOT_FOUND);
