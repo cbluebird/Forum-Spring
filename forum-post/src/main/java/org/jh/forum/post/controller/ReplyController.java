@@ -1,7 +1,6 @@
 package org.jh.forum.post.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jh.forum.post.model.Reply;
 import org.jh.forum.post.service.IReplyService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,11 +40,9 @@ public class ReplyController {
     }
 
     @GetMapping("/get")
-    public List<Reply> getReplies(@RequestParam Long postId, @RequestParam int page_num, @RequestParam int page_size) {
+    public List<Reply> getReplies(@RequestParam Long postId) {
         QueryWrapper<Reply> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("post_id", postId).orderByDesc("created_on");
-
-        Page<Reply> replyPage = replyService.page(new Page<>(page_num, page_size), queryWrapper);
-        return replyPage.getRecords();
+        return replyService.list(queryWrapper);
     }
 }

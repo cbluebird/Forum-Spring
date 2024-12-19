@@ -1,21 +1,26 @@
 package org.jh.forum.post.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jh.forum.post.dto.PostContentDTO;
 import org.jh.forum.post.dto.PostDTO;
+import org.jh.forum.post.feign.UserFeign;
 import org.jh.forum.post.model.Post;
 import org.jh.forum.post.model.PostContent;
 import org.jh.forum.post.service.ICategoryService;
 import org.jh.forum.post.service.IPostContentService;
 import org.jh.forum.post.service.IPostService;
+import org.jh.forum.post.vo.PostVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Validated
 @RestController
@@ -29,6 +34,9 @@ public class PostController {
 
     @Autowired
     private IPostContentService postContentService;
+
+    @Autowired
+    private UserFeign userFeign;
 
     @PostMapping("/add")
     public void addPost(@RequestHeader("X-User-ID") String userId, @RequestBody @Validated PostDTO postDTO) {
@@ -75,11 +83,32 @@ public class PostController {
     }
 
     @GetMapping("/list/category")
-    public List<Post> getPostListByCategory(@RequestParam int pageNum, @RequestParam int pageSize, @RequestParam int categoryId) {
+    public List<PostVO> getPostListByCategory(@RequestParam int pageNum, @RequestParam int pageSize, @RequestParam int categoryId) {
         IPage<Post> page = new Page<>(pageNum, pageSize);
         QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("category_id", categoryId);
         IPage<Post> userPage = postService.page(page, queryWrapper); // 调用 page 方法
-        return userPage.getRecords();
+        List<PostVO> postVOS = new ArrayList<>();
+        for (Post post : userPage.getRecords()) {
+            PostVO postVO = new PostVO();
+            postVO.setPostVO(post);
+            Object user = userFeign.getUserById(post.getUserId());
+            Map<String, Object> userMap = BeanUtil.beanToMap(user);
+            postVO.setUserVO(userMap);
+            postVOS.add(postVO);
+        }
+        return postVOS;
+    }
+
+    @GetMapping("/single/get")
+    public PostVO getSinglePost(@RequestParam Long postId) {
+        PostVO postVO = new PostVO();
+        Post post = postService.getById(postId);
+        postVO.setPostVO(post);
+        Object user = userFeign.getUserById(post.getUserId());
+        Map<String, Object> userMap = BeanUtil.beanToMap(user);
+        postVO.setUserVO(userMap);
+        postVO.setPostContentVO(postContentService.list(new QueryWrapper<PostContent>().eq("post_id", postId)));
+        return postVO;
     }
 }
