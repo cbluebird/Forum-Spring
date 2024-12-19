@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -82,12 +83,21 @@ public class PostController {
     }
 
     @GetMapping("/list/category")
-    public List<Post> getPostListByCategory(@RequestParam int pageNum, @RequestParam int pageSize, @RequestParam int categoryId) {
+    public List<PostVO> getPostListByCategory(@RequestParam int pageNum, @RequestParam int pageSize, @RequestParam int categoryId) {
         IPage<Post> page = new Page<>(pageNum, pageSize);
         QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("category_id", categoryId);
         IPage<Post> userPage = postService.page(page, queryWrapper); // 调用 page 方法
-        return userPage.getRecords();
+        List<PostVO> postVOS = new ArrayList<>();
+        for (Post post : userPage.getRecords()) {
+            PostVO postVO = new PostVO();
+            postVO.setPostVO(post);
+            Object user = userFeign.getUserById(post.getUserId());
+            Map<String, Object> userMap = BeanUtil.beanToMap(user);
+            postVO.setUserVO(userMap);
+            postVOS.add(postVO);
+        }
+        return postVOS;
     }
 
     @GetMapping("/single/get")
