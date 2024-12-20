@@ -12,6 +12,7 @@ import org.jh.forum.post.model.PostContent;
 import org.jh.forum.post.service.ICategoryService;
 import org.jh.forum.post.service.IPostContentService;
 import org.jh.forum.post.service.IPostService;
+import org.jh.forum.post.service.impl.TaskService;
 import org.jh.forum.post.vo.PostVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -38,6 +39,9 @@ public class PostController {
 
     @Autowired
     private Jedis jedis;
+
+    @Autowired
+    private TaskService taskService;
 
     @PostMapping("/add")
     public void addPost(@RequestHeader("X-User-ID") String userId, @RequestBody @Validated PostDTO postDTO) {
@@ -91,8 +95,7 @@ public class PostController {
         IPage<Post> userPage = postService.page(page, queryWrapper); // 调用 page 方法
         List<PostVO> postVOS = new ArrayList<>();
         Set<String> collectedPostIds = jedis.smembers(userId + "-collect");
-        Set<String> upvotedPostIds = jedis.smembers(userId + "-upvote");
-
+        Set<String> upvotedPostIds = jedis.smembers(userId + "-star");
 
         for (Post post : userPage.getRecords()) {
             PostVO postVO = new PostVO();
@@ -116,5 +119,26 @@ public class PostController {
         postVO.setUserVO(userMap);
         postVO.setPostContentVO(postContentService.list(new QueryWrapper<PostContent>().eq("post_id", postId)));
         return postVO;
+    }
+
+    @GetMapping("/hot/day")
+    public List<PostVO> getHotPostListOfDay(@RequestHeader("X-User-ID") String userId, @RequestParam int pageNum, @RequestParam int pageSize) {
+        long hour = System.currentTimeMillis() / (1000 * 60 * 60);
+        List<String> postIds = jedis.zrevrange(taskService.DAY_KEY, (long) (pageNum - 1) * pageSize, (long) pageNum * pageSize - 1);
+        List<PostVO> postVOS = new ArrayList<>();
+        Set<String> collectedPostIds = jedis.smembers(userId + "-collect");
+        Set<String> upvotedPostIds = jedis.smembers(userId + "-upvote");
+
+        for (String postId : postIds) {
+            Post post = postService.getById(Long.valueOf(postId));
+            PostVO postVO = new PostVO();
+            postVO.setPostVO(post);
+            Object user = userFeign.getUserById(post.getUserId());
+            Map<String, Object> userMap = BeanUtil.beanToMap(user);
+            postVO.setUserVO(userMap);
+            postVO.setPostIsCollectAndIsUpvote(collectedPostIds.contains(postId), upvotedPostIds.contains(postId));
+            postVOS.add(postVO);
+        }
+        return postVOS;
     }
 }

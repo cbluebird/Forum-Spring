@@ -7,6 +7,7 @@ import org.jh.forum.post.model.Post;
 import org.jh.forum.post.model.Star;
 import org.jh.forum.post.service.IPostService;
 import org.jh.forum.post.service.IStarService;
+import org.jh.forum.post.service.impl.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +31,9 @@ public class StarController {
     @Autowired
     private Jedis jedis;
 
+    @Autowired
+    private TaskService taskService;
+
     @PostMapping("/add")
     public void likePost(@RequestBody StarDTO starReq, @RequestHeader("X-User-ID") String userId) {
         Post post = postService.getById(starReq.getPostId());
@@ -47,8 +51,8 @@ public class StarController {
 
             post.setUpvoteCount(post.getUpvoteCount() + 1);
             postService.updateById(post);
-
             jedis.sadd(userId + "-star", String.valueOf(starReq.getPostId()));
+            taskService.setData(String.valueOf(starReq.getPostId()));
         }
     }
 
@@ -64,6 +68,7 @@ public class StarController {
 
             post.setUpvoteCount(post.getUpvoteCount() - 1);
             postService.updateById(post);
+            jedis.srem(userId + "-star", String.valueOf(post.getId()));
         }
     }
 
