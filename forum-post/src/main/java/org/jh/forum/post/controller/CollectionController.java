@@ -10,6 +10,7 @@ import org.jh.forum.post.service.IPostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import redis.clients.jedis.Jedis;
 
 import java.util.Date;
 import java.util.List;
@@ -25,6 +26,9 @@ public class CollectionController {
 
     @Autowired
     private IPostService postService;
+
+    @Autowired
+    private Jedis jedis;
 
     @PostMapping("/add")
     public void addCollection(@RequestBody CollectDTO collectReq, @RequestHeader("X-User-ID") String userId) {
@@ -43,6 +47,7 @@ public class CollectionController {
 
             post.setCollectionCount(post.getCollectionCount() + 1);
             postService.updateById(post);
+            jedis.sadd(userId + "-star", String.valueOf(collectReq.getPostId()));
         }
     }
 

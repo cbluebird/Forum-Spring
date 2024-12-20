@@ -10,6 +10,7 @@ import org.jh.forum.post.service.IStarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import redis.clients.jedis.Jedis;
 
 import java.util.Date;
 import java.util.List;
@@ -25,6 +26,9 @@ public class StarController {
 
     @Autowired
     private IPostService postService;
+
+    @Autowired
+    private Jedis jedis;
 
     @PostMapping("/add")
     public void likePost(@RequestBody StarDTO starReq, @RequestHeader("X-User-ID") String userId) {
@@ -43,6 +47,8 @@ public class StarController {
 
             post.setUpvoteCount(post.getUpvoteCount() + 1);
             postService.updateById(post);
+
+            jedis.sadd(userId + "-star", String.valueOf(starReq.getPostId()));
         }
     }
 
