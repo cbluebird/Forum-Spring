@@ -7,9 +7,11 @@ import org.jh.forum.post.model.Collection;
 import org.jh.forum.post.model.Post;
 import org.jh.forum.post.service.ICollectionService;
 import org.jh.forum.post.service.IPostService;
+import org.jh.forum.post.service.impl.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import redis.clients.jedis.Jedis;
 
 import java.util.Date;
 import java.util.List;
@@ -25,6 +27,12 @@ public class CollectionController {
 
     @Autowired
     private IPostService postService;
+
+    @Autowired
+    private Jedis jedis;
+
+    @Autowired
+    private TaskService taskService;
 
     @PostMapping("/add")
     public void addCollection(@RequestBody CollectDTO collectReq, @RequestHeader("X-User-ID") String userId) {
@@ -43,6 +51,8 @@ public class CollectionController {
 
             post.setCollectionCount(post.getCollectionCount() + 1);
             postService.updateById(post);
+            jedis.sadd(userId + "-collect", String.valueOf(collectReq.getPostId()));
+            taskService.setData(String.valueOf(collectReq.getPostId()));
         }
     }
 
@@ -58,6 +68,7 @@ public class CollectionController {
 
             post.setCollectionCount(post.getCollectionCount() - 1);
             postService.updateById(post);
+            jedis.srem(userId + "-collect", String.valueOf(post.getId()));
         }
     }
 

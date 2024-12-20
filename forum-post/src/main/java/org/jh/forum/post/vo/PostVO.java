@@ -57,4 +57,9 @@ public class PostVO {
     public void setPostContentVO(List<PostContent> postContentList) {
         this.postContent = postContentList;
     }
+
+    public void setPostIsCollectAndIsUpvote(Boolean isCollect, Boolean isUpvote) {
+        this.isCollect = isCollect;
+        this.isUpvote = isUpvote;
+    }
 }
