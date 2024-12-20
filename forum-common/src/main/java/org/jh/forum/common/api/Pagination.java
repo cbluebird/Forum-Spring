@@ -20,4 +20,13 @@ public class Pagination<T> {
         pagination.setList(page.getRecords());
         return pagination;
     }
+
+    public static <T> Pagination<T> of(List<T> list, Long pageNum, Long pageSize, Long total) {
+        Pagination<T> pagination = new Pagination<>();
+        pagination.setPageNum(pageNum);
+        pagination.setPageSize(pageSize);
+        pagination.setTotal(total);
+        pagination.setList(list);
+        return pagination;
+    }
 }

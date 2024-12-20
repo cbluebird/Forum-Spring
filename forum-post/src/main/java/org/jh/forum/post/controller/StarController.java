@@ -2,6 +2,7 @@ package org.jh.forum.post.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.jh.forum.common.api.Pagination;
 import org.jh.forum.post.dto.StarDTO;
 import org.jh.forum.post.model.Post;
 import org.jh.forum.post.model.Star;
@@ -73,14 +74,14 @@ public class StarController {
     }
 
     @GetMapping("/get")
-    public List<Post> getPostStarPage(@RequestParam int page_num, @RequestParam int page_size, @RequestHeader("X-User-ID") String userId) {
+    public Pagination<Post> getPostStarPage(@RequestParam Long pageNum, @RequestParam Long pageSize, @RequestHeader("X-User-ID") String userId) {
         Long userIdLong = Long.valueOf(userId);
         QueryWrapper<Star> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_id", userIdLong).orderByDesc("created_on");
 
-        Page<Star> starPage = starService.page(new Page<>(page_num, page_size), queryWrapper);
+        Page<Star> starPage = starService.page(new Page<>(pageNum, pageSize), queryWrapper);
         List<Long> postIds = starPage.getRecords().stream().map(Star::getPostId).collect(Collectors.toList());
-
-        return postService.listByIds(postIds);
+        Long total = starService.count(queryWrapper);
+        return Pagination.of(postService.listByIds(postIds), starPage.getCurrent(), starPage.getSize(), total);
     }
 }

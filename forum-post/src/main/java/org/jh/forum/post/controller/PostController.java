@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.jh.forum.common.api.Pagination;
 import org.jh.forum.post.dto.PostContentDTO;
 import org.jh.forum.post.dto.PostDTO;
 import org.jh.forum.post.feign.UserFeign;
@@ -88,7 +89,7 @@ public class PostController {
     }
 
     @GetMapping("/list/category")
-    public List<PostVO> getPostListByCategory(@RequestHeader("X-User-ID") String userId, @RequestParam int pageNum, @RequestParam int pageSize, @RequestParam int categoryId) {
+    public Pagination<PostVO> getPostListByCategory(@RequestHeader("X-User-ID") String userId, @RequestParam int pageNum, @RequestParam int pageSize, @RequestParam int categoryId) {
         IPage<Post> page = new Page<>(pageNum, pageSize);
         QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("category_id", categoryId);
@@ -106,7 +107,8 @@ public class PostController {
             postVO.setPostIsCollectAndIsUpvote(collectedPostIds.contains(String.valueOf(post.getId())), upvotedPostIds.contains(String.valueOf(post.getId())));
             postVOS.add(postVO);
         }
-        return postVOS;
+        Long total = postService.count(queryWrapper);
+        return Pagination.of(postVOS, userPage.getCurrent(), userPage.getSize(), total);
     }
 
     @GetMapping("/single/get")
@@ -122,9 +124,8 @@ public class PostController {
     }
 
     @GetMapping("/hot/day")
-    public List<PostVO> getHotPostListOfDay(@RequestHeader("X-User-ID") String userId, @RequestParam int pageNum, @RequestParam int pageSize) {
-        long hour = System.currentTimeMillis() / (1000 * 60 * 60);
-        List<String> postIds = jedis.zrevrange(taskService.DAY_KEY, (long) (pageNum - 1) * pageSize, (long) pageNum * pageSize - 1);
+    public Pagination<PostVO> getHotPostListOfDay(@RequestHeader("X-User-ID") String userId, @RequestParam Long pageNum, @RequestParam Long pageSize) {
+        List<String> postIds = jedis.zrevrange(taskService.DAY_KEY, (pageNum - 1) * pageSize, pageNum * pageSize - 1);
         List<PostVO> postVOS = new ArrayList<>();
         Set<String> collectedPostIds = jedis.smembers(userId + "-collect");
         Set<String> upvotedPostIds = jedis.smembers(userId + "-upvote");
@@ -139,6 +140,6 @@ public class PostController {
             postVO.setPostIsCollectAndIsUpvote(collectedPostIds.contains(postId), upvotedPostIds.contains(postId));
             postVOS.add(postVO);
         }
-        return postVOS;
+        return Pagination.of(postVOS, pageNum, pageSize, (long) postIds.size());
     }
 }
