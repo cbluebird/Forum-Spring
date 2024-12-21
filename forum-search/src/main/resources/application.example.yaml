@@ -1,0 +1,9 @@
+server:
+  port: 18086
+spring:
+  application:
+    name: forum-search
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848

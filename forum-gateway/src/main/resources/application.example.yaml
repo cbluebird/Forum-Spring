@@ -33,6 +33,10 @@ spring:
           uri: lb://forum-oss
           predicates:
             - Path=/api/oss/**
+        - id: forum-search
+          uri: lb://forum-search
+          predicates:
+            - Path=/api/search/**
   data:
     redis:
       host: localhost
