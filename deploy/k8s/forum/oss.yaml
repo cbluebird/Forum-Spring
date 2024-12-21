@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oss-deployment
+  namespace: ns-forum
+  labels:
+    app: oss
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oss
+  template:
+    metadata:
+      labels:
+        app: oss
+    spec:
+      containers:
+        - name: oss
+          image: docker.io/cbluebird/forum-oss:v0.0.5
+          volumeMounts:
+            - name: config
+              mountPath: /app/application.yaml
+              subPath: application.yaml
+              readOnly: true
+            - name: log-config
+              mountPath: /app/logback-spring.xml
+              subPath: logback-spring.xml
+              readOnly: true
+          ports:
+            - containerPort: 18084
+      volumes:
+        - name: config
+          configMap:
+            name: oss-config
+            items:
+              - key: application.yaml
+                path: application.yaml
+        - name: log-config
+          configMap:
+            name: log-config
+            items:
+              - key: logback-spring.xml
+                path: logback-spring.xml
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oss-service
+  namespace: ns-forum
+  labels:
+    app: oss
+spec:
+  selector:
+    app: oss
+  ports:
+    - protocol: TCP
+      port: 18084
+      targetPort: 18084

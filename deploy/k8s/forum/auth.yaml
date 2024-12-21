@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-deployment
+  namespace: ns-forum
+  labels:
+    app: auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+        - name: auth
+          image: docker.io/cbluebird/forum-auth:v0.0.5
+          volumeMounts:
+            - name: config
+              mountPath: /app/application.yaml
+              subPath: application.yaml
+              readOnly: true
+            - name: log-config
+              mountPath: /app/logback-spring.xml
+              subPath: logback-spring.xml
+              readOnly: true
+          ports:
+            - containerPort: 18081
+      volumes:
+        - name: config
+          configMap:
+            name: auth-config
+            items:
+              - key: application.yaml
+                path: application.yaml
+        - name: log-config
+          configMap:
+            name: log-config
+            items:
+              - key: logback-spring.xml
+                path: logback-spring.xml
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: ns-forum
+  labels:
+    app: auth
+spec:
+  selector:
+    app: auth
+  ports:
+    - protocol: TCP
+      port: 18081
+      targetPort: 18081

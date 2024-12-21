@@ -50,7 +50,7 @@ public class PostVO {
 
     public void setUserVO(Map<String, Object> userMap) {
         UserVO userVO = new UserVO();
-        userVO.setUserId((Long) userMap.get("id"));
+        userVO.setUserId(Long.parseLong(String.valueOf(userMap.get("id"))));
         userVO.setUsername((String) userMap.get("username"));
         userVO.setNickname((String) userMap.get("nickname"));
         userVO.setPhone((String) userMap.get("phone"));

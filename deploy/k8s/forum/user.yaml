@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-deployment
+  namespace: ns-forum
+  labels:
+    app: user
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user
+  template:
+    metadata:
+      labels:
+        app: user
+    spec:
+      containers:
+        - name: user
+          image: docker.io/cbluebird/forum-user:v0.0.5
+          volumeMounts:
+            - name: config
+              mountPath: /app/application.yaml
+              subPath: application.yaml
+              readOnly: true
+            - name: log-config
+              mountPath: /app/logback-spring.xml
+              subPath: logback-spring.xml
+              readOnly: true
+          ports:
+            - containerPort: 18086
+      volumes:
+        - name: config
+          configMap:
+            name: user-config
+            items:
+              - key: application.yaml
+                path: application.yaml
+        - name: log-config
+          configMap:
+            name: log-config
+            items:
+              - key: logback-spring.xml
+                path: logback-spring.xml
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  namespace: ns-forum
+  labels:
+    app: user
+spec:
+  selector:
+    app: user
+  ports:
+    - protocol: TCP
+      port: 18086
+      targetPort: 18086

@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-deployment
+  namespace: ns-forum
+  labels:
+    app: gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      containers:
+        - name: gateway
+          image: docker.io/cbluebird/forum-gateway:v0.0.5
+          volumeMounts:
+            - name: config
+              mountPath: /app/application.yaml
+              subPath: application.yaml
+              readOnly: true
+            - name: log-config
+              mountPath: /app/logback-spring.xml
+              subPath: logback-spring.xml
+              readOnly: true
+          ports:
+            - containerPort: 8080
+      volumes:
+        - name: config
+          configMap:
+            name: gateway-config
+            items:
+              - key: application.yaml
+                path: application.yaml
+        - name: log-config
+          configMap:
+            name: log-config
+            items:
+              - key: logback-spring.xml
+                path: logback-spring.xml
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway-service
+  namespace: ns-forum
+  labels:
+    app: gateway
+spec:
+  type: NodePort
+  selector:
+    app: gateway
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 30080
