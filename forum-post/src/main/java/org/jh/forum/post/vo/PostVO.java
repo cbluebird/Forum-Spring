@@ -5,8 +5,9 @@ import lombok.Setter;
 import org.jh.forum.post.constant.Visibility;
 import org.jh.forum.post.model.Post;
 import org.jh.forum.post.model.PostContent;
-import org.jh.forum.post.model.PostTag;
+import org.jh.forum.post.model.Tag;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -67,10 +68,13 @@ public class PostVO {
         this.isUpvote = isUpvote;
     }
 
-    public void setTags(List<PostTag> tags) {
-        for (PostTag postTag : tags) {
+    public void setTags(List<Tag> tags) {
+        this.tags = new ArrayList<>();
+        System.out.println("tags: " + tags);
+        for (Tag tag : tags) {
             TagVO tagVO = new TagVO();
-            tagVO.setId(postTag.getTagId());
+            tagVO.setId(tag.getId());
+            tagVO.setTag(tag.getTag());
             this.tags.add(tagVO);
         }
     }
