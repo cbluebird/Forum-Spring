@@ -15,6 +15,7 @@ public class Post {
     private Long userId;
     private Long categoryId;
     private String title;
+    private String content;
     private Long commentCount;
     private Long collectionCount;
     private Long upvoteCount;

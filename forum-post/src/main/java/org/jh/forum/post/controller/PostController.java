@@ -55,6 +55,7 @@ public class PostController {
         post.setUserId(Long.valueOf(userId));
         post.setCategoryId(postDTO.getCategoryId());
         post.setTitle(postDTO.getTitle());
+        post.setContent(postDTO.getContent());
         post.setVisibility(postDTO.getVisibility());
         post.setIp(postDTO.getIp());
         post.setIpLoc(postDTO.getIpLoc());
@@ -64,7 +65,7 @@ public class PostController {
         Long postId = post.getId();
 
         // Loop through the content array in PostDTO
-        for (PostContentDTO contentDTO : postDTO.getContent()) {
+        for (PostContentDTO contentDTO : postDTO.getLink()) {
             PostContent postContent = new PostContent();
             postContent.setPostId(postId);
             postContent.setContent(contentDTO.getContent());
