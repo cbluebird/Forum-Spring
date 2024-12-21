@@ -1,10 +1,13 @@
 package org.jh.forum.post.vo;
 
 import lombok.Data;
+import lombok.Setter;
 import org.jh.forum.post.constant.Visibility;
 import org.jh.forum.post.model.Post;
 import org.jh.forum.post.model.PostContent;
+import org.jh.forum.post.model.Tag;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +29,8 @@ public class PostVO {
     private String ipLoc;
     private Date createdOn;
     private List<PostContent> postContent;
+    @Setter
+    private List<TagVO> tags;
 
     public void setPostVO(Post post) {
         this.id = post.getId();
@@ -61,5 +66,16 @@ public class PostVO {
     public void setPostIsCollectAndIsUpvote(Boolean isCollect, Boolean isUpvote) {
         this.isCollect = isCollect;
         this.isUpvote = isUpvote;
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = new ArrayList<>();
+        System.out.println("tags: " + tags);
+        for (Tag tag : tags) {
+            TagVO tagVO = new TagVO();
+            tagVO.setId(tag.getId());
+            tagVO.setTag(tag.getTag());
+            this.tags.add(tagVO);
+        }
     }
 }

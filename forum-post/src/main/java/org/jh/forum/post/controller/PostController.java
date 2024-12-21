@@ -10,9 +10,8 @@ import org.jh.forum.post.dto.PostDTO;
 import org.jh.forum.post.feign.UserFeign;
 import org.jh.forum.post.model.Post;
 import org.jh.forum.post.model.PostContent;
-import org.jh.forum.post.service.ICategoryService;
-import org.jh.forum.post.service.IPostContentService;
-import org.jh.forum.post.service.IPostService;
+import org.jh.forum.post.model.PostTag;
+import org.jh.forum.post.service.*;
 import org.jh.forum.post.service.impl.TaskService;
 import org.jh.forum.post.vo.PostVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +43,12 @@ public class PostController {
     @Autowired
     private TaskService taskService;
 
+    @Autowired
+    private IPostTagService postTagService;
+
+    @Autowired
+    private ITagService tagService;
+
     @PostMapping("/add")
     public void addPost(@RequestHeader("X-User-ID") String userId, @RequestBody @Validated PostDTO postDTO) {
         Post post = new Post();
@@ -70,6 +75,12 @@ public class PostController {
             postContentService.save(postContent);
         }
 
+        for (Long tagId : postDTO.getTags()) {
+            PostTag postTag = new PostTag();
+            postTag.setPostId(postId);
+            postTag.setTagId(tagId);
+            postTagService.save(postTag);
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -105,6 +116,7 @@ public class PostController {
             Map<String, Object> userMap = BeanUtil.beanToMap(user);
             postVO.setUserVO(userMap);
             postVO.setPostIsCollectAndIsUpvote(collectedPostIds.contains(String.valueOf(post.getId())), upvotedPostIds.contains(String.valueOf(post.getId())));
+            postVO.setTags(tagService.getTagsByPostTags(postTagService.list(new QueryWrapper<PostTag>().eq("post_id", post.getId()))));
             postVOS.add(postVO);
         }
         Long total = postService.count(queryWrapper);
@@ -120,6 +132,7 @@ public class PostController {
         Map<String, Object> userMap = BeanUtil.beanToMap(user);
         postVO.setUserVO(userMap);
         postVO.setPostContentVO(postContentService.list(new QueryWrapper<PostContent>().eq("post_id", postId)));
+        postVO.setTags(tagService.getTagsByPostTags(postTagService.list(new QueryWrapper<PostTag>().eq("post_id", post.getId()))));
         return postVO;
     }
 
@@ -138,6 +151,7 @@ public class PostController {
             Map<String, Object> userMap = BeanUtil.beanToMap(user);
             postVO.setUserVO(userMap);
             postVO.setPostIsCollectAndIsUpvote(collectedPostIds.contains(postId), upvotedPostIds.contains(postId));
+            postVO.setTags(tagService.getTagsByPostTags(postTagService.list(new QueryWrapper<PostTag>().eq("post_id", post.getId()))));
             postVOS.add(postVO);
         }
         return Pagination.of(postVOS, pageNum, pageSize, (long) postIds.size());
