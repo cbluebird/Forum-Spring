@@ -17,4 +17,5 @@ public class PostDTO {
     private String ip;
     private String ipLoc;
     private PostContentDTO[] content;
+    private Long[] tags;
 }
