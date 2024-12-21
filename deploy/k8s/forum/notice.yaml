@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notice-deployment
+  namespace: ns-forum
+  labels:
+    app: notice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notice
+  template:
+    metadata:
+      labels:
+        app: notice
+    spec:
+      containers:
+        - name: notice
+          image: docker.io/cbluebird/forum-notice:v0.0.5
+          volumeMounts:
+            - name: config
+              mountPath: /app/application.yaml
+              subPath: application.yaml
+              readOnly: true
+            - name: log-config
+              mountPath: /app/logback-spring.xml
+              subPath: logback-spring.xml
+              readOnly: true
+          ports:
+            - containerPort: 18083
+      volumes:
+        - name: config
+          configMap:
+            name: notice-config
+            items:
+              - key: application.yaml
+                path: application.yaml
+        - name: log-config
+          configMap:
+            name: log-config
+            items:
+              - key: logback-spring.xml
+                path: logback-spring.xml
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notice-service
+  namespace: ns-forum
+  labels:
+    app: notice
+spec:
+  selector:
+    app: notice
+  ports:
+    - protocol: TCP
+      port: 18083
+      targetPort: 18083
