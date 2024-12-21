@@ -13,6 +13,7 @@ import org.jh.forum.user.dto.UserBatchDTO;
 import org.jh.forum.user.dto.UserDTO;
 import org.jh.forum.user.model.User;
 import org.jh.forum.user.service.IUserService;
+import org.jh.forum.user.vo.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -38,6 +39,17 @@ public class UserController {
         user.setType(UserType.ORDINARY);
         user.setStatus(UserStatus.ACTIVE);
         userService.save(user);
+    }
+
+    @GetMapping("/info")
+    public UserVO getUserInfo(@RequestHeader("X-User-ID") String userId) {
+        User user = userService.getById(userId);
+        if (user == null) {
+            throw new BizException(ErrorCode.USER_NOT_FOUND);
+        }
+        UserVO userVO = new UserVO();
+        BeanUtil.copyProperties(user, userVO);
+        return userVO;
     }
 
     @GetMapping("/username/{username}")
