@@ -17,6 +17,7 @@ public class PostVO {
     private Long id;
     private UserVO user;
     private String title;
+    private String content;
     private Long commentCount;
     private Long collectionCount;
     private Long upvoteCount;
@@ -28,13 +29,14 @@ public class PostVO {
     private String ip;
     private String ipLoc;
     private Date createdOn;
-    private List<PostContent> postContent;
+    private List<PostContent> postLink;
     @Setter
     private List<TagVO> tags;
 
     public void setPostVO(Post post) {
         this.id = post.getId();
         this.title = post.getTitle();
+        this.content = post.getContent();
         this.commentCount = post.getCommentCount();
         this.collectionCount = post.getCollectionCount();
         this.upvoteCount = post.getUpvoteCount();
@@ -59,8 +61,8 @@ public class PostVO {
         this.user = userVO;
     }
 
-    public void setPostContentVO(List<PostContent> postContentList) {
-        this.postContent = postContentList;
+    public void setPostContentVO(List<PostContent> postLink) {
+        this.postLink = postLink;
     }
 
     public void setPostIsCollectAndIsUpvote(Boolean isCollect, Boolean isUpvote) {
@@ -70,7 +72,6 @@ public class PostVO {
 
     public void setTags(List<Tag> tags) {
         this.tags = new ArrayList<>();
-        System.out.println("tags: " + tags);
         for (Tag tag : tags) {
             TagVO tagVO = new TagVO();
             tagVO.setId(tag.getId());

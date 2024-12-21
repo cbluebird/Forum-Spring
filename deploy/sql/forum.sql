@@ -38,6 +38,7 @@ CREATE TABLE `post`
     `id`               BIGINT                                                       NOT NULL AUTO_INCREMENT COMMENT '主题 ID',
     `user_id`          BIGINT                                                       NOT NULL DEFAULT '0' COMMENT '用户 ID',
     `category_id`      BIGINT                                                       NOT NULL DEFAULT '0' COMMENT '板块 ID',
+    `content` varchar(4000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '内容',
     `title`            varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '标题',
     `comment_count`    BIGINT                                                       NOT NULL DEFAULT '0' COMMENT '评论数',
     `collection_count` BIGINT                                                       NOT NULL DEFAULT '0' COMMENT '收藏数',

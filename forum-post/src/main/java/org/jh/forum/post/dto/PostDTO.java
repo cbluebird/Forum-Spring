@@ -16,6 +16,7 @@ public class PostDTO {
     private Visibility visibility;
     private String ip;
     private String ipLoc;
-    private PostContentDTO[] content;
+    private String content;
+    private PostContentDTO[] link;
     private Long[] tags;
 }
