@@ -13,6 +13,7 @@ import org.jh.forum.user.dto.UserBatchDTO;
 import org.jh.forum.user.dto.UserDTO;
 import org.jh.forum.user.model.User;
 import org.jh.forum.user.service.IUserService;
+import org.jh.forum.user.vo.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -27,17 +28,49 @@ public class UserController {
     private IUserService userService;
 
     @PostMapping("/register")
-    public void add(@RequestBody @Validated UserDTO userDTO) {
-        User user = userService.getOne(new QueryWrapper<User>().eq("username", userDTO.getUsername()));
-        if (user != null) {
-            throw new BizException(ErrorCode.USER_ALREADY_EXISTS);
+    public void add(@RequestBody @Validated(UserDTO.Register.class) UserDTO userDTO) {
+        if (userService.getOne(new QueryWrapper<User>().eq("username", userDTO.getUsername())) != null) {
+            throw new BizException(ErrorCode.USERNAME_ALREADY_EXISTS, "用户名: " + userDTO.getUsername() + " 已存在");
         }
-        user = new User();
+        if (userService.getOne(new QueryWrapper<User>().eq("phone", userDTO.getPhone())) != null) {
+            throw new BizException(ErrorCode.PHONE_ALREADY_BIND, "手机号: " + userDTO.getPhone() + " 已绑定");
+        }
+        if (userService.getOne(new QueryWrapper<User>().eq("email", userDTO.getEmail())) != null) {
+            throw new BizException(ErrorCode.EMAIL_ALREADY_BIND, "邮箱: " + userDTO.getEmail() + " 已绑定");
+        }
+        User user = new User();
         BeanUtil.copyProperties(userDTO, user, "password");
         user.setPassword(BCrypt.hashpw(userDTO.getPassword()));
         user.setType(UserType.ORDINARY);
         user.setStatus(UserStatus.ACTIVE);
         userService.save(user);
+    }
+    
+    @PutMapping("/info")
+    public void update(@RequestHeader("X-User-ID") String userId, @RequestBody @Validated(UserDTO.Update.class) UserDTO userDTO) {
+        User user = userService.getById(userId);
+        if (!user.getUsername().equals(userDTO.getUsername()) && userService.getOne(new QueryWrapper<User>().eq("username", userDTO.getUsername())) != null) {
+            throw new BizException(ErrorCode.USERNAME_ALREADY_EXISTS, "用户名: " + userDTO.getUsername() + " 已存在");
+        }
+        if (!user.getPhone().equals(userDTO.getPhone()) && userService.getOne(new QueryWrapper<User>().eq("phone", userDTO.getPhone())) != null) {
+            throw new BizException(ErrorCode.PHONE_ALREADY_BIND, "手机号: " + userDTO.getPhone() + " 已绑定");
+        }
+        if (!user.getEmail().equals(userDTO.getEmail()) && userService.getOne(new QueryWrapper<User>().eq("email", userDTO.getEmail())) != null) {
+            throw new BizException(ErrorCode.EMAIL_ALREADY_BIND, "邮箱: " + userDTO.getEmail() + " 已绑定");
+        }
+        BeanUtil.copyProperties(userDTO, user, "id", "password", "type", "status");
+        userService.updateById(user);
+    }
+
+    @GetMapping("/info")
+    public UserVO getUserInfo(@RequestHeader("X-User-ID") String userId) {
+        User user = userService.getById(userId);
+        if (user == null) {
+            throw new BizException(ErrorCode.USER_NOT_FOUND);
+        }
+        UserVO userVO = new UserVO();
+        BeanUtil.copyProperties(user, userVO);
+        return userVO;
     }
 
     @GetMapping("/username/{username}")
