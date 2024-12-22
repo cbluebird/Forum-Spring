@@ -28,12 +28,17 @@ public class UserController {
     private IUserService userService;
 
     @PostMapping("/register")
-    public void add(@RequestBody @Validated UserDTO userDTO) {
-        User user = userService.getOne(new QueryWrapper<User>().eq("username", userDTO.getUsername()));
-        if (user != null) {
-            throw new BizException(ErrorCode.USER_ALREADY_EXISTS);
+    public void add(@RequestBody @Validated(UserDTO.Register.class) UserDTO userDTO) {
+        if (userService.getOne(new QueryWrapper<User>().eq("username", userDTO.getUsername())) != null) {
+            throw new BizException(ErrorCode.USERNAME_ALREADY_EXISTS, "用户名: " + userDTO.getUsername() + " 已存在");
         }
-        user = new User();
+        if (userService.getOne(new QueryWrapper<User>().eq("phone", userDTO.getPhone())) != null) {
+            throw new BizException(ErrorCode.PHONE_ALREADY_BIND, "手机号: " + userDTO.getPhone() + " 已绑定");
+        }
+        if (userService.getOne(new QueryWrapper<User>().eq("email", userDTO.getEmail())) != null) {
+            throw new BizException(ErrorCode.EMAIL_ALREADY_BIND, "邮箱: " + userDTO.getEmail() + " 已绑定");
+        }
+        User user = new User();
         BeanUtil.copyProperties(userDTO, user, "password");
         user.setPassword(BCrypt.hashpw(userDTO.getPassword()));
         user.setType(UserType.ORDINARY);
