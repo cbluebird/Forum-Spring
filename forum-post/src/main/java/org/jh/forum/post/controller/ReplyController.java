@@ -49,6 +49,17 @@ public class ReplyController {
         }
     }
 
+    @PostMapping("/unlike")
+    public void unlikeReply(@RequestHeader("X-User-ID") String userId, @RequestBody ReplyStarDTO replyStarDTO) {
+        Reply reply = replyService.getById(replyStarDTO.getReplyId());
+        Set<String> upvotedPostIds = jedis.smembers(userId + "-reply-star");
+        if (upvotedPostIds.contains(String.valueOf(reply.getId()))) {
+            reply.setThumbsUpCount(reply.getThumbsUpCount() - 1);
+            replyService.updateById(reply);
+            jedis.srem(userId + "-reply-star", String.valueOf(replyStarDTO.getReplyId()));
+        }
+    }
+
     @GetMapping("/get")
     public Pagination<ReplyVO> getReplies(@RequestHeader("X-User-ID") String userId, @RequestParam Long postId) {
         QueryWrapper<Reply> queryWrapper = new QueryWrapper<>();
