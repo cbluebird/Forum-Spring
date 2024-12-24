@@ -64,7 +64,10 @@ public class ReplyController {
     public Pagination<ReplyVO> getReplies(@RequestHeader("X-User-ID") String userId, @RequestParam Long postId) {
         QueryWrapper<Reply> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("post_id", postId).orderByDesc("created_on");
-        Set<String> upvotedPostIds = jedis.smembers(userId + "-reply-star");
+        Set<String> upvotedPostIds = null;
+        if (jedis.exists(userId + "-reply-star")) {
+            upvotedPostIds = jedis.smembers(userId + "-reply-star");
+        }
         List<Reply> replies = replyService.list(queryWrapper);
         List<ReplyVO> replyVOArrayList = new ArrayList<>();
         for (Reply reply : replies) {
