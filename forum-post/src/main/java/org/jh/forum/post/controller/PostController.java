@@ -107,18 +107,17 @@ public class PostController {
         queryWrapper.eq("category_id", categoryId);
         IPage<Post> userPage = postService.page(page, queryWrapper); // 调用 page 方法
         List<PostVO> postVOS = new ArrayList<>();
-        Set<String> collectedPostIds = jedis.smembers(userId + "-collect");
+        Set<String> collectedPostIds = null;
+        if (jedis.exists(userId + "-collect")) {
+            collectedPostIds = jedis.smembers(userId + "-collect");
+        }
         Set<String> upvotedPostIds = jedis.smembers(userId + "-star");
+        if (jedis.exists(userId + "-star")) {
+            upvotedPostIds = jedis.smembers(userId + "-star");
+        }
 
         for (Post post : userPage.getRecords()) {
-            PostVO postVO = new PostVO();
-            postVO.setPostVO(post);
-            Object user = userFeign.getUserById(post.getUserId());
-            Map<String, Object> userMap = BeanUtil.beanToMap(user);
-            postVO.setUserVO(userMap);
-            postVO.setPostIsCollectAndIsUpvote(collectedPostIds.contains(String.valueOf(post.getId())), upvotedPostIds.contains(String.valueOf(post.getId())));
-            postVO.setTags(tagService.getTagsByPostTags(postTagService.list(new QueryWrapper<PostTag>().eq("post_id", post.getId()))));
-            postVOS.add(postVO);
+            setPage(postVOS, collectedPostIds, upvotedPostIds, post);
         }
         Long total = postService.count(queryWrapper);
         return Pagination.of(postVOS, userPage.getCurrent(), userPage.getSize(), total);
@@ -141,20 +140,39 @@ public class PostController {
     public Pagination<PostVO> getHotPostListOfDay(@RequestHeader("X-User-ID") String userId, @RequestParam Long pageNum, @RequestParam Long pageSize) {
         List<String> postIds = jedis.zrevrange(taskService.DAY_KEY, (pageNum - 1) * pageSize, pageNum * pageSize - 1);
         List<PostVO> postVOS = new ArrayList<>();
-        Set<String> collectedPostIds = jedis.smembers(userId + "-collect");
-        Set<String> upvotedPostIds = jedis.smembers(userId + "-upvote");
-
+        Set<String> collectedPostIds = null;
+        if (jedis.exists(userId + "-collect")) {
+            collectedPostIds = jedis.smembers(userId + "-collect");
+        }
+        Set<String> upvotedPostIds = jedis.smembers(userId + "-star");
+        if (jedis.exists(userId + "-star")) {
+            upvotedPostIds = jedis.smembers(userId + "-star");
+        }
         for (String postId : postIds) {
             Post post = postService.getById(Long.valueOf(postId));
-            PostVO postVO = new PostVO();
-            postVO.setPostVO(post);
-            Object user = userFeign.getUserById(post.getUserId());
-            Map<String, Object> userMap = BeanUtil.beanToMap(user);
-            postVO.setUserVO(userMap);
-            postVO.setPostIsCollectAndIsUpvote(collectedPostIds.contains(postId), upvotedPostIds.contains(postId));
-            postVO.setTags(tagService.getTagsByPostTags(postTagService.list(new QueryWrapper<PostTag>().eq("post_id", post.getId()))));
-            postVOS.add(postVO);
+            setPage(postVOS, collectedPostIds, upvotedPostIds, post);
         }
         return Pagination.of(postVOS, pageNum, pageSize, (long) postIds.size());
     }
+
+    private void setPage(List<PostVO> postVOS, Set<String> collectedPostIds, Set<String> upvotePostIds, Post post) {
+        PostVO postVO = new PostVO();
+        postVO.setPostVO(post);
+        Object user = userFeign.getUserById(post.getUserId());
+        Map<String, Object> userMap = BeanUtil.beanToMap(user);
+        postVO.setUserVO(userMap);
+        if (collectedPostIds != null) {
+            postVO.setIsCollect(collectedPostIds.contains(String.valueOf(post.getId())));
+        } else {
+            postVO.setIsCollect(false);
+        }
+        if (upvotePostIds != null) {
+            postVO.setIsUpvote(upvotePostIds.contains(String.valueOf(post.getId())));
+        } else {
+            postVO.setIsUpvote(false);
+        }
+        postVO.setTags(tagService.getTagsByPostTags(postTagService.list(new QueryWrapper<PostTag>().eq("post_id", post.getId()))));
+        postVOS.add(postVO);
+    }
+
 }
