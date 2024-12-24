@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: user
-          image: docker.io/cbluebird/forum-user:v0.0.5
+          image: docker.io/cbluebird/forum-user:v0.0.7
           volumeMounts:
             - name: config
               mountPath: /app/application.yaml

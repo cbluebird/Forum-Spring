@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: search
-          image: docker.io/cbluebird/forum-search:v0.0.6
+          image: docker.io/cbluebird/forum-search:v0.0.7
           volumeMounts:
             - name: config
               mountPath: /app/application.yaml

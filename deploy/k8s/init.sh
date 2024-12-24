@@ -16,3 +16,4 @@ kubectl apply -f forum/notice.yaml -n ns-forum
 kubectl apply -f forum/oss.yaml -n ns-forum
 kubectl apply -f forum/post.yaml -n ns-forum
 kubectl apply -f forum/user.yaml -n ns-forum
+kubectl apply -f forum/search.yaml -n ns-forum
