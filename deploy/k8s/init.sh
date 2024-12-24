@@ -7,6 +7,7 @@ kubectl create configmap notice-config --from-file=notice/application.yaml -n ns
 kubectl create configmap oss-config --from-file=oss/application.yaml -n ns-forum
 kubectl create configmap post-config --from-file=post/application.yaml -n ns-forum
 kubectl create configmap user-config --from-file=user/application.yaml -n ns-forum
+kubectl create configmap search-config --from-file=search/application.yaml -n ns-forum
 kubectl create configmap log-config --from-file=logback-spring.xml -n ns-forum
 
 kubectl apply -f forum/auth.yaml -n ns-forum
