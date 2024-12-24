@@ -9,6 +9,7 @@ import org.jh.forum.common.api.Pagination;
 import org.jh.forum.common.exception.BizException;
 import org.jh.forum.post.dto.PostContentDTO;
 import org.jh.forum.post.dto.PostDTO;
+import org.jh.forum.post.dto.PostIdDTO;
 import org.jh.forum.post.feign.UserFeign;
 import org.jh.forum.post.model.Post;
 import org.jh.forum.post.model.PostContent;
@@ -66,7 +67,6 @@ public class PostController {
         postService.save(post);
         Long postId = post.getId();
 
-        // Loop through the content array in PostDTO
         for (PostContentDTO contentDTO : postDTO.getLink()) {
             PostContent postContent = new PostContent();
             postContent.setPostId(postId);
@@ -74,7 +74,6 @@ public class PostController {
             postContent.setType(contentDTO.getType());
             postContent.setIsDel(false);
 
-            // Save the post content
             postContentService.save(postContent);
         }
 
@@ -86,10 +85,10 @@ public class PostController {
         }
     }
 
-    @DeleteMapping("/{id}")
-    public void deletePost(@PathVariable Long id) {
-        if (!postService.removeById(id)) {
-            throw new BizException(ErrorCode.POST_SERV_ERROR, "Failed to delete post with ID: " + id);
+    @PostMapping("/del")
+    public void deletePost(@RequestBody PostIdDTO id) {
+        if (!postService.removeById(id.getId())) {
+            throw new BizException(ErrorCode.POST_NOT_FOUND, "Failed to delete post with ID");
         }
     }
 
@@ -99,15 +98,6 @@ public class PostController {
         if (!postService.updateById(post)) {
             throw new BizException(ErrorCode.POST_UPDATE_FAILED, "Failed to update post with ID: " + post.getId());
         }
-    }
-
-    @GetMapping("/{id}")
-    public Post getPostById(@PathVariable Long id) {
-        Post post = postService.getById(id);
-        if (post == null) {
-            throw new BizException(ErrorCode.POST_NOT_FOUND, "Post not found with ID: " + id);
-        }
-        return post;
     }
 
     @GetMapping("/list/category")

@@ -57,11 +57,13 @@ public class CollectionController {
         }
     }
 
-    @DeleteMapping("/del")
-    public void removeCollection(@RequestBody Post post, @RequestHeader("X-User-ID") String userId) {
+    @PostMapping("/del")
+    public void removeCollection(@RequestBody CollectDTO collectReq, @RequestHeader("X-User-ID") String userId) {
         Long userIdLong = Long.valueOf(userId);
         QueryWrapper<Collection> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("post_id", post.getId()).eq("user_id", userIdLong);
+        queryWrapper.eq("post_id", collectReq.getPostId()).eq("user_id", userIdLong);
+
+        Post post = postService.getById(collectReq.getPostId());
 
         Collection existingCollection = collectionService.getOne(queryWrapper);
         if (existingCollection != null) {
