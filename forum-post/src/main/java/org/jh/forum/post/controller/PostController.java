@@ -4,9 +4,12 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.jh.forum.common.api.ErrorCode;
 import org.jh.forum.common.api.Pagination;
+import org.jh.forum.common.exception.BizException;
 import org.jh.forum.post.dto.PostContentDTO;
 import org.jh.forum.post.dto.PostDTO;
+import org.jh.forum.post.dto.PostIdDTO;
 import org.jh.forum.post.feign.UserFeign;
 import org.jh.forum.post.model.Post;
 import org.jh.forum.post.model.PostContent;
@@ -64,7 +67,6 @@ public class PostController {
         postService.save(post);
         Long postId = post.getId();
 
-        // Loop through the content array in PostDTO
         for (PostContentDTO contentDTO : postDTO.getLink()) {
             PostContent postContent = new PostContent();
             postContent.setPostId(postId);
@@ -72,7 +74,6 @@ public class PostController {
             postContent.setType(contentDTO.getType());
             postContent.setIsDel(false);
 
-            // Save the post content
             postContentService.save(postContent);
         }
 
@@ -84,20 +85,19 @@ public class PostController {
         }
     }
 
-    @DeleteMapping("/{id}")
-    public void deletePost(@PathVariable Long id) {
-        postService.removeById(id);
+    @PostMapping("/del")
+    public void deletePost(@RequestBody PostIdDTO id) {
+        if (!postService.removeById(id.getId())) {
+            throw new BizException(ErrorCode.POST_NOT_FOUND, "Failed to delete post with ID");
+        }
     }
 
     @PutMapping("/{id}")
     public void updatePost(@RequestBody @Validated Post post) {
         post.setModifiedOn(new Date());
-        postService.updateById(post);
-    }
-
-    @GetMapping("/{id}")
-    public Post getPostById(@PathVariable Long id) {
-        return postService.getById(id);
+        if (!postService.updateById(post)) {
+            throw new BizException(ErrorCode.POST_UPDATE_FAILED, "Failed to update post with ID: " + post.getId());
+        }
     }
 
     @GetMapping("/list/category")
@@ -127,6 +127,9 @@ public class PostController {
     public PostVO getSinglePost(@RequestParam Long postId) {
         PostVO postVO = new PostVO();
         Post post = postService.getById(postId);
+        if (post == null) {
+            throw new BizException(ErrorCode.POST_NOT_FOUND, "Post not found with ID: " + postId);
+        }
         postVO.setPostVO(post);
         Object user = userFeign.getUserById(post.getUserId());
         Map<String, Object> userMap = BeanUtil.beanToMap(user);
@@ -150,6 +153,9 @@ public class PostController {
         }
         for (String postId : postIds) {
             Post post = postService.getById(Long.valueOf(postId));
+            if (post == null) {
+                throw new BizException(ErrorCode.POST_NOT_FOUND, "Post not found with ID: " + postId);
+            }
             setPage(postVOS, collectedPostIds, upvotedPostIds, post);
         }
         return Pagination.of(postVOS, pageNum, pageSize, (long) postIds.size());
@@ -174,5 +180,4 @@ public class PostController {
         postVO.setTags(tagService.getTagsByPostTags(postTagService.list(new QueryWrapper<PostTag>().eq("post_id", post.getId()))));
         postVOS.add(postVO);
     }
-
 }

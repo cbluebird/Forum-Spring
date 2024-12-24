@@ -57,11 +57,13 @@ public class StarController {
         }
     }
 
-    @DeleteMapping("/del")
-    public void unlikePost(@RequestBody Post post, @RequestHeader("X-User-ID") String userId) {
+    @PostMapping("/del")
+    public void unlikePost(@RequestBody StarDTO starReq, @RequestHeader("X-User-ID") String userId) {
         Long userIdLong = Long.valueOf(userId);
         QueryWrapper<Star> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("post_id", post.getId()).eq("user_id", userIdLong);
+        queryWrapper.eq("post_id", starReq.getPostId()).eq("user_id", userIdLong);
+
+        Post post = postService.getById(starReq.getPostId());
 
         Star existingStar = starService.getOne(queryWrapper);
         if (existingStar != null) {
