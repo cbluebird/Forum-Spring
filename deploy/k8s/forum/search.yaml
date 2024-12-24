@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: user-deployment
+  name: search-deployment
   namespace: ns-forum
   labels:
-    app: user
+    app: search
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: user
+      app: search
   template:
     metadata:
       labels:
-        app: user
+        app: search
     spec:
       containers:
-        - name: user
-          image: docker.io/cbluebird/forum-user:v0.0.7
+        - name: search
+          image: docker.io/cbluebird/forum-search:v0.0.7
           volumeMounts:
             - name: config
               mountPath: /app/application.yaml
@@ -32,7 +32,7 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: user-config
+            name: search-config
             items:
               - key: application.yaml
                 path: application.yaml
@@ -47,13 +47,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: user-service
+  name: search-service
   namespace: ns-forum
   labels:
-    app: user
+    app: search
 spec:
   selector:
-    app: user
+    app: search
   ports:
     - protocol: TCP
       port: 18086

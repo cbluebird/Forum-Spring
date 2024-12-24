@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: post
-          image: docker.io/cbluebird/forum-post:v0.0.6
+          image: docker.io/cbluebird/forum-post:v0.0.7
           volumeMounts:
             - name: config
               mountPath: /app/application.yaml
