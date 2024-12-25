@@ -73,7 +73,11 @@ public class ReplyController {
         for (Reply reply : replies) {
             ReplyVO replyVO = new ReplyVO();
             replyVO.setReplyVO(reply);
-            replyVO.setIsUpvote(upvotedPostIds.contains(reply.getId().toString()));
+            if (upvotedPostIds != null) {
+                replyVO.setIsUpvote(upvotedPostIds.contains(reply.getId().toString()));
+            } else {
+                replyVO.setIsUpvote(false);
+            }
             replyVOArrayList.add(replyVO);
         }
         return Pagination.of(replyVOArrayList, 1L, 10L, (long) replyVOArrayList.size());
