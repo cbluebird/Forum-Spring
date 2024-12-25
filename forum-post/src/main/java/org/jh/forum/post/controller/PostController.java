@@ -27,6 +27,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
+// TODO 添加浏览量 reply的数量
+
+
 @Validated
 @RestController
 @RequestMapping("/api/post")
@@ -130,6 +133,8 @@ public class PostController {
         if (post == null) {
             throw new BizException(ErrorCode.POST_NOT_FOUND, "Post not found with ID: " + postId);
         }
+        post.setViewCount(post.getViewCount() + 1);
+        postService.updateById(post);
         postVO.setPostVO(post);
         Object user = userFeign.getUserById(post.getUserId());
         Map<String, Object> userMap = BeanUtil.beanToMap(user);
