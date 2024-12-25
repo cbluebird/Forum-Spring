@@ -8,10 +8,10 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum Visibility {
-    PRIVATE(0, "私密"),
-    FOLLOWERS(1, "关注可见"),
-    FRIENDS(2, "好友可见"),
-    PUBLIC(3, "公开");
+    PRIVATE(1, "私密"),
+    FOLLOWERS(2, "关注可见"),
+    FRIENDS(3, "好友可见"),
+    PUBLIC(4, "公开");
 
     @EnumValue
     @JsonValue
