@@ -8,5 +8,5 @@ import java.util.List;
 @Data
 public class UserBatchDTO {
     @NotNull(message = "用户 ID 列表不能为空")
-    List<Long> userIds;
+    List<Integer> userIds;
 }

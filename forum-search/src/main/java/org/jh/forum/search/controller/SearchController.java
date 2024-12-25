@@ -50,7 +50,7 @@ public class SearchController {
             Instant instant = Instant.ofEpochSecond(timestamp);
             hit.put("modified_on", LocalDateTime.ofInstant(instant, ZoneId.systemDefault()));
             String userId = (String) formatted.get("user_id");
-            hit.put("user", userFeign.getUserById(Long.parseLong(userId)));
+            hit.put("user", userFeign.getUserById(Integer.parseInt(userId)));
         }
         List<SearchPostVO> searchPostVOList = JSONUtil.toList(JSONUtil.toJsonStr(hits), SearchPostVO.class);
         return Pagination.of(searchPostVOList, pageNum, pageSize, (long) srp.getTotalHits());

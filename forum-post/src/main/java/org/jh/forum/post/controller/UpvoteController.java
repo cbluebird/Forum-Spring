@@ -39,15 +39,14 @@ public class UpvoteController {
     @PostMapping("/add")
     public void likePost(@RequestBody StarDTO starReq, @RequestHeader("X-User-ID") String userId) {
         Post post = postService.getById(starReq.getPostId());
-        Long userIdLong = Long.valueOf(userId);
         QueryWrapper<Star> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("post_id", starReq.getPostId()).eq("user_id", userIdLong);
+        queryWrapper.eq("post_id", starReq.getPostId()).eq("user_id", userId);
 
         Star existingStar = starService.getOne(queryWrapper);
         if (existingStar == null) {
             Star star = new Star();
             star.setPostId(starReq.getPostId());
-            star.setUserId(userIdLong);
+            star.setUserId(Integer.valueOf(userId));
             star.setCreatedOn(new Date());
             starService.save(star);
             post.setUpvoteCount(post.getUpvoteCount() + 1);
@@ -59,9 +58,8 @@ public class UpvoteController {
 
     @PostMapping("/del")
     public void unlikePost(@RequestBody StarDTO starReq, @RequestHeader("X-User-ID") String userId) {
-        Long userIdLong = Long.valueOf(userId);
         QueryWrapper<Star> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("post_id", starReq.getPostId()).eq("user_id", userIdLong);
+        queryWrapper.eq("post_id", starReq.getPostId()).eq("user_id", userId);
 
         Post post = postService.getById(starReq.getPostId());
 
@@ -76,12 +74,11 @@ public class UpvoteController {
 
     @GetMapping("/get")
     public Pagination<Post> getPostStarPage(@RequestParam Long pageNum, @RequestParam Long pageSize, @RequestHeader("X-User-ID") String userId) {
-        Long userIdLong = Long.valueOf(userId);
         QueryWrapper<Star> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("user_id", userIdLong).orderByDesc("created_on");
+        queryWrapper.eq("user_id", userId).orderByDesc("created_on");
 
         Page<Star> starPage = starService.page(new Page<>(pageNum, pageSize), queryWrapper);
-        List<Long> postIds = starPage.getRecords().stream().map(Star::getPostId).collect(Collectors.toList());
+        List<Integer> postIds = starPage.getRecords().stream().map(Star::getPostId).collect(Collectors.toList());
         Long total = starService.count(queryWrapper);
         return Pagination.of(postService.listByIds(postIds), starPage.getCurrent(), starPage.getSize(), total);
     }

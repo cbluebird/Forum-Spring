@@ -14,15 +14,15 @@ import java.util.Map;
 
 @Data
 public class PostVO {
-    private Long id;
+    private Integer id;
     private UserVO user;
     private String title;
     private String content;
-    private Long commentCount;
-    private Long collectionCount;
-    private Long upvoteCount;
-    private Long viewCount;
-    private Long shareCount;
+    private Integer commentCount;
+    private Integer collectionCount;
+    private Integer upvoteCount;
+    private Integer viewCount;
+    private Integer shareCount;
     private Boolean isCollect;
     private Boolean isUpvote;
     private Visibility visibility;
@@ -52,7 +52,7 @@ public class PostVO {
 
     public void setUserVO(Map<String, Object> userMap) {
         UserVO userVO = new UserVO();
-        userVO.setId(Long.parseLong(String.valueOf(userMap.get("id"))));
+        userVO.setId((Integer) userMap.get("id"));
         userVO.setUsername((String) userMap.get("username"));
         userVO.setNickname((String) userMap.get("nickname"));
         userVO.setAvatar((String) userMap.get("avatar"));

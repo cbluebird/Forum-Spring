@@ -45,7 +45,7 @@ public class UserController {
         user.setStatus(UserStatus.ACTIVE);
         userService.save(user);
     }
-    
+
     @PutMapping("/info")
     public void update(@RequestHeader("X-User-ID") String userId, @RequestBody @Validated(UserDTO.Update.class) UserDTO userDTO) {
         User user = userService.getById(userId);
@@ -83,7 +83,7 @@ public class UserController {
     }
 
     @GetMapping("/id/{userId}")
-    public User getUserById(@PathVariable("userId") @NotNull(message = "User ID 不能为空") Long userId) {
+    public User getUserById(@PathVariable("userId") @NotNull(message = "User ID 不能为空") Integer userId) {
         User user = userService.getById(userId);
         if (user == null) {
             throw new BizException(ErrorCode.USER_NOT_FOUND);
@@ -93,11 +93,11 @@ public class UserController {
 
     @PostMapping("/batch-get")
     public List<User> getUserByIds(@RequestBody @Validated UserBatchDTO userBatchDTO) {
-        List<Long> userIds = userBatchDTO.getUserIds();
+        List<Integer> userIds = userBatchDTO.getUserIds();
         List<User> users = userService.listByIds(userIds);
         if (users.size() != userIds.size()) {
-            List<Long> foundUserIds = users.stream().map(User::getId).toList();
-            List<Long> missingUserIds = userIds.stream().filter(id -> !foundUserIds.contains(id)).toList();
+            List<Integer> foundUserIds = users.stream().map(User::getId).toList();
+            List<Integer> missingUserIds = userIds.stream().filter(id -> !foundUserIds.contains(id)).toList();
             throw new BizException(ErrorCode.USER_NOT_FOUND, "Missing user IDs: " + missingUserIds);
         }
         return users;

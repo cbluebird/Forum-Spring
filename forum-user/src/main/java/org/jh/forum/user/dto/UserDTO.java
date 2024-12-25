@@ -7,7 +7,7 @@ import org.jh.forum.user.constant.UserType;
 
 @Data
 public class UserDTO {
-    private Long id;
+    private Integer id;
     @NotBlank(message = "用户名不能为空", groups = {Register.class, Update.class})
     private String username;
     @NotBlank(message = "密码不能为空", groups = {Register.class})

@@ -6,15 +6,15 @@ import java.time.LocalDateTime;
 
 @Data
 public class SearchPostVO {
-    private Long id;
+    private Integer id;
     private UserVO user;
     private String title;
     private String content;
-    private Long viewCount;
-    private Long upvoteCount;
-    private Long commentCount;
-    private Long collectionCount;
-    private Long shareCount;
+    private Integer viewCount;
+    private Integer upvoteCount;
+    private Integer commentCount;
+    private Integer collectionCount;
+    private Integer shareCount;
     private String ip;
     private String ipLoc;
     private LocalDateTime modifiedOn;

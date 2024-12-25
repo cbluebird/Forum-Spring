@@ -38,15 +38,14 @@ public class CollectionController {
     @PostMapping("/add")
     public void addCollection(@RequestBody CollectDTO collectReq, @RequestHeader("X-User-ID") String userId) {
         Post post = postService.getById(collectReq.getPostId());
-        Long userIdLong = Long.valueOf(userId);
         QueryWrapper<Collection> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("post_id", collectReq.getPostId()).eq("user_id", userIdLong);
+        queryWrapper.eq("post_id", collectReq.getPostId()).eq("user_id", userId);
 
         Collection existingCollection = collectionService.getOne(queryWrapper);
         if (existingCollection == null) {
             Collection collection = new Collection();
             collection.setPostId(collectReq.getPostId());
-            collection.setUserId(userIdLong);
+            collection.setUserId(Integer.valueOf(userId));
             collection.setCreatedOn(new Date());
             collectionService.save(collection);
 
@@ -59,9 +58,8 @@ public class CollectionController {
 
     @PostMapping("/del")
     public void removeCollection(@RequestBody CollectDTO collectReq, @RequestHeader("X-User-ID") String userId) {
-        Long userIdLong = Long.valueOf(userId);
         QueryWrapper<Collection> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("post_id", collectReq.getPostId()).eq("user_id", userIdLong);
+        queryWrapper.eq("post_id", collectReq.getPostId()).eq("user_id", userId);
 
         Post post = postService.getById(collectReq.getPostId());
 
@@ -77,12 +75,11 @@ public class CollectionController {
 
     @GetMapping("/get")
     public Pagination<Post> getPostCollectionPage(@RequestParam Long pageNum, @RequestParam Long pageSize, @RequestHeader("X-User-ID") String userId) {
-        Long userIdLong = Long.valueOf(userId);
         QueryWrapper<Collection> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("user_id", userIdLong).orderByDesc("created_on");
+        queryWrapper.eq("user_id", userId).orderByDesc("created_on");
 
         Page<Collection> collectionPage = collectionService.page(new Page<>(pageNum, pageSize), queryWrapper);
-        List<Long> postIds = collectionPage.getRecords().stream().map(Collection::getPostId).collect(Collectors.toList());
+        List<Integer> postIds = collectionPage.getRecords().stream().map(Collection::getPostId).collect(Collectors.toList());
         Long total = collectionService.count(queryWrapper);
         return Pagination.of(postService.listByIds(postIds), collectionPage.getCurrent(), collectionPage.getSize(), total);
     }

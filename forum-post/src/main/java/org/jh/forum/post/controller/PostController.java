@@ -52,7 +52,7 @@ public class PostController {
     @PostMapping("/add")
     public void addPost(@RequestHeader("X-User-ID") String userId, @RequestBody @Validated PostDTO postDTO) {
         Post post = new Post();
-        post.setUserId(Long.valueOf(userId));
+        post.setUserId(Integer.valueOf(userId));
         post.setCategoryId(postDTO.getCategoryId());
         post.setTitle(postDTO.getTitle());
         post.setContent(postDTO.getContent());
@@ -62,7 +62,7 @@ public class PostController {
         post.setCreatedOn(new Date());
 
         postService.save(post);
-        Long postId = post.getId();
+        Integer postId = post.getId();
 
         if (postDTO.getLink() != null) {
             for (PostContentDTO contentDTO : postDTO.getLink()) {
@@ -77,7 +77,7 @@ public class PostController {
         }
 
         if (postDTO.getTags() != null) {
-            for (Long tagId : postDTO.getTags()) {
+            for (Integer tagId : postDTO.getTags()) {
                 PostTag postTag = new PostTag();
                 postTag.setPostId(postId);
                 postTag.setTagId(tagId);
@@ -124,7 +124,7 @@ public class PostController {
     }
 
     @GetMapping("/single/get")
-    public PostVO getSinglePost(@RequestParam Long postId) {
+    public PostVO getSinglePost(@RequestParam Integer postId) {
         PostVO postVO = new PostVO();
         Post post = postService.getById(postId);
         if (post == null) {
@@ -157,7 +157,7 @@ public class PostController {
             collectPostIds = new HashSet<>();
         }
         for (String postId : postIds) {
-            Post post = postService.getById(Long.valueOf(postId));
+            Post post = postService.getById(postId);
             if (post == null) {
                 throw new BizException(ErrorCode.POST_NOT_FOUND, "Post not found with ID: " + postId);
             }

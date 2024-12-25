@@ -10,8 +10,8 @@ import java.util.Date;
 @TableName("notice")
 public class Notice {
     @TableId
-    private Long id;
-    private Long userId;
+    private Integer id;
+    private Integer userId;
     private String content;
     private Date createdOn;
 }

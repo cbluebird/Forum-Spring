@@ -8,5 +8,5 @@ import org.springframework.web.bind.annotation.PathVariable;
 @FeignClient(name = "forum-user", path = "/api/user")
 public interface UserFeign {
     @GetMapping("/id/{userId}")
-    Object getUserById(@PathVariable("userId") @NotNull(message = "User ID 不能为空") Long userId);
+    Object getUserById(@PathVariable("userId") @NotNull(message = "User ID 不能为空") Integer userId);
 }

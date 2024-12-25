@@ -10,11 +10,11 @@ import java.util.Date;
 @TableName("reply")
 public class Reply {
     @TableId
-    private Long id;
-    private Long postId;
-    private Long root;
-    private Long parent;
-    private Long userId;
+    private Integer id;
+    private Integer postId;
+    private Integer root;
+    private Integer parent;
+    private Integer userId;
     private String content;
     private String ip;
     private String ipLoc;

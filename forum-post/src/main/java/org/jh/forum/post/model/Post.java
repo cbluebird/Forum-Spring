@@ -11,16 +11,16 @@ import java.util.Date;
 @TableName("post")
 public class Post {
     @TableId
-    private Long id;
-    private Long userId;
-    private Long categoryId;
+    private Integer id;
+    private Integer userId;
+    private Integer categoryId;
     private String title;
     private String content;
-    private Long commentCount;
-    private Long collectionCount;
-    private Long upvoteCount;
-    private Long viewCount;
-    private Long shareCount;
+    private Integer commentCount;
+    private Integer collectionCount;
+    private Integer upvoteCount;
+    private Integer viewCount;
+    private Integer shareCount;
     private Visibility visibility;
     private Integer isTop;
     private Integer isEssence;

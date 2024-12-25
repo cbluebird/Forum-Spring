@@ -21,13 +21,13 @@ public class NoticeController {
 
     @PostMapping("/add")
     public void addNotice(@RequestBody Notice notice, @RequestHeader("X-User-ID") String userId) {
-        notice.setUserId(Long.valueOf(userId));
+        notice.setUserId(Integer.valueOf(userId));
         notice.setCreatedOn(new Date());
         noticeService.save(notice);
     }
 
     @DeleteMapping("/del")
-    public void deleteNotice(@RequestParam Long noticeId) {
+    public void deleteNotice(@RequestParam Integer noticeId) {
         noticeService.removeById(noticeId);
     }
 

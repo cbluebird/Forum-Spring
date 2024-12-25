@@ -8,7 +8,7 @@ import org.jh.forum.post.constant.Visibility;
 @Data
 public class PostDTO {
     @NotNull(message = "Category ID cannot be null")
-    private Long categoryId;
+    private Integer categoryId;
 
     @NotBlank(message = "Title cannot be blank")
     private String title;
@@ -18,5 +18,5 @@ public class PostDTO {
     private String ipLoc;
     private String content;
     private PostContentDTO[] link;
-    private Long[] tags;
+    private Integer[] tags;
 }

@@ -9,8 +9,8 @@ import org.jh.forum.post.constant.PostContentType;
 @TableName("post_content")
 public class PostContent {
     @TableId
-    private Long id;
-    private Long postId;
+    private Integer id;
+    private Integer postId;
     private String content;
     private PostContentType type;
     private Boolean isDel;
