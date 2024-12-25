@@ -3,6 +3,7 @@ package org.jh.forum.post.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jh.forum.common.api.Pagination;
+import org.jh.forum.post.constant.RedisKey;
 import org.jh.forum.post.dto.CollectDTO;
 import org.jh.forum.post.model.Collection;
 import org.jh.forum.post.model.Post;
@@ -10,9 +11,9 @@ import org.jh.forum.post.service.ICollectionService;
 import org.jh.forum.post.service.IPostService;
 import org.jh.forum.post.service.impl.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import redis.clients.jedis.Jedis;
 
 import java.util.Date;
 import java.util.List;
@@ -22,7 +23,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/post/collect")
 public class CollectionController {
-
     @Autowired
     private ICollectionService collectionService;
 
@@ -30,7 +30,7 @@ public class CollectionController {
     private IPostService postService;
 
     @Autowired
-    private Jedis jedis;
+    private RedisTemplate<String, String> redisTemplate;
 
     @Autowired
     private TaskService taskService;
@@ -52,7 +52,7 @@ public class CollectionController {
 
             post.setCollectionCount(post.getCollectionCount() + 1);
             postService.updateById(post);
-            jedis.sadd(userId + "-collect", String.valueOf(collectReq.getPostId()));
+            redisTemplate.opsForSet().add(RedisKey.USER_COLLECTION + userId, String.valueOf(collectReq.getPostId()));
             taskService.setData(String.valueOf(collectReq.getPostId()));
         }
     }
@@ -71,7 +71,7 @@ public class CollectionController {
 
             post.setCollectionCount(post.getCollectionCount() - 1);
             postService.updateById(post);
-            jedis.srem(userId + "-collect", String.valueOf(post.getId()));
+            redisTemplate.opsForSet().remove(RedisKey.USER_COLLECTION + userId, String.valueOf(collectReq.getPostId()));
         }
     }
 

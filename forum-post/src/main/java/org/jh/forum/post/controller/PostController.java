@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jh.forum.common.api.ErrorCode;
 import org.jh.forum.common.api.Pagination;
 import org.jh.forum.common.exception.BizException;
+import org.jh.forum.post.constant.RedisKey;
 import org.jh.forum.post.dto.PostContentDTO;
 import org.jh.forum.post.dto.PostDTO;
 import org.jh.forum.post.dto.PostIdDTO;
@@ -14,13 +15,15 @@ import org.jh.forum.post.feign.UserFeign;
 import org.jh.forum.post.model.Post;
 import org.jh.forum.post.model.PostContent;
 import org.jh.forum.post.model.PostTag;
-import org.jh.forum.post.service.*;
-import org.jh.forum.post.service.impl.TaskService;
+import org.jh.forum.post.service.IPostContentService;
+import org.jh.forum.post.service.IPostService;
+import org.jh.forum.post.service.IPostTagService;
+import org.jh.forum.post.service.ITagService;
 import org.jh.forum.post.vo.PostVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import redis.clients.jedis.Jedis;
 
 import java.util.*;
 
@@ -32,19 +35,13 @@ public class PostController {
     private IPostService postService;
 
     @Autowired
-    private ICategoryService categoryService;
-
-    @Autowired
     private IPostContentService postContentService;
 
     @Autowired
     private UserFeign userFeign;
 
     @Autowired
-    private Jedis jedis;
-
-    @Autowired
-    private TaskService taskService;
+    private RedisTemplate<String, String> redisTemplate;
 
     @Autowired
     private IPostTagService postTagService;
@@ -67,21 +64,25 @@ public class PostController {
         postService.save(post);
         Long postId = post.getId();
 
-        for (PostContentDTO contentDTO : postDTO.getLink()) {
-            PostContent postContent = new PostContent();
-            postContent.setPostId(postId);
-            postContent.setContent(contentDTO.getContent());
-            postContent.setType(contentDTO.getType());
-            postContent.setIsDel(false);
+        if (postDTO.getLink() != null) {
+            for (PostContentDTO contentDTO : postDTO.getLink()) {
+                PostContent postContent = new PostContent();
+                postContent.setPostId(postId);
+                postContent.setContent(contentDTO.getContent());
+                postContent.setType(contentDTO.getType());
+                postContent.setIsDel(false);
 
-            postContentService.save(postContent);
+                postContentService.save(postContent);
+            }
         }
 
-        for (Long tagId : postDTO.getTags()) {
-            PostTag postTag = new PostTag();
-            postTag.setPostId(postId);
-            postTag.setTagId(tagId);
-            postTagService.save(postTag);
+        if (postDTO.getTags() != null) {
+            for (Long tagId : postDTO.getTags()) {
+                PostTag postTag = new PostTag();
+                postTag.setPostId(postId);
+                postTag.setTagId(tagId);
+                postTagService.save(postTag);
+            }
         }
     }
 
@@ -105,22 +106,21 @@ public class PostController {
         IPage<Post> page = new Page<>(pageNum, pageSize);
         QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("category_id", categoryId);
-        IPage<Post> userPage = postService.page(page, queryWrapper); // 调用 page 方法
-        List<PostVO> postVOS = new ArrayList<>();
-        Set<String> collectedPostIds = null;
-        if (jedis.exists(userId + "-collect")) {
-            collectedPostIds = jedis.smembers(userId + "-collect");
+        IPage<Post> userPage = postService.page(page, queryWrapper);
+        List<PostVO> postVOs = new ArrayList<>();
+        Set<String> upvotePostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
+        if (upvotePostIds == null) {
+            upvotePostIds = new HashSet<>();
         }
-        Set<String> upvotedPostIds = jedis.smembers(userId + "-star");
-        if (jedis.exists(userId + "-star")) {
-            upvotedPostIds = jedis.smembers(userId + "-star");
+        Set<String> collectPostIds = redisTemplate.opsForSet().members(RedisKey.USER_COLLECTION + userId);
+        if (collectPostIds == null) {
+            collectPostIds = new HashSet<>();
         }
-
         for (Post post : userPage.getRecords()) {
-            setPage(postVOS, collectedPostIds, upvotedPostIds, post);
+            setPage(postVOs, collectPostIds, upvotePostIds, post);
         }
         Long total = postService.count(queryWrapper);
-        return Pagination.of(postVOS, userPage.getCurrent(), userPage.getSize(), total);
+        return Pagination.of(postVOs, userPage.getCurrent(), userPage.getSize(), total);
     }
 
     @GetMapping("/single/get")
@@ -141,27 +141,30 @@ public class PostController {
 
     @GetMapping("/hot/day")
     public Pagination<PostVO> getHotPostListOfDay(@RequestHeader("X-User-ID") String userId, @RequestParam Long pageNum, @RequestParam Long pageSize) {
-        List<String> postIds = jedis.zrevrange(taskService.DAY_KEY, (pageNum - 1) * pageSize, pageNum * pageSize - 1);
-        List<PostVO> postVOS = new ArrayList<>();
-        Set<String> collectedPostIds = null;
-        if (jedis.exists(userId + "-collect")) {
-            collectedPostIds = jedis.smembers(userId + "-collect");
+        Set<String> postIds = redisTemplate.opsForZSet().reverseRange(RedisKey.HOT_POST_DAY, (pageNum - 1) * pageSize, pageNum * pageSize - 1);
+        if (postIds == null) {
+            return Pagination.of(new ArrayList<>(), pageNum, pageSize, 0L);
         }
-        Set<String> upvotedPostIds = jedis.smembers(userId + "-star");
-        if (jedis.exists(userId + "-star")) {
-            upvotedPostIds = jedis.smembers(userId + "-star");
+        List<PostVO> postVOs = new ArrayList<>();
+        Set<String> upvotePostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
+        if (upvotePostIds == null) {
+            upvotePostIds = new HashSet<>();
+        }
+        Set<String> collectPostIds = redisTemplate.opsForSet().members(RedisKey.USER_COLLECTION + userId);
+        if (collectPostIds == null) {
+            collectPostIds = new HashSet<>();
         }
         for (String postId : postIds) {
             Post post = postService.getById(Long.valueOf(postId));
             if (post == null) {
                 throw new BizException(ErrorCode.POST_NOT_FOUND, "Post not found with ID: " + postId);
             }
-            setPage(postVOS, collectedPostIds, upvotedPostIds, post);
+            setPage(postVOs, collectPostIds, upvotePostIds, post);
         }
-        return Pagination.of(postVOS, pageNum, pageSize, (long) postIds.size());
+        return Pagination.of(postVOs, pageNum, pageSize, (long) postIds.size());
     }
 
-    private void setPage(List<PostVO> postVOS, Set<String> collectedPostIds, Set<String> upvotePostIds, Post post) {
+    private void setPage(List<PostVO> postVOs, Set<String> collectedPostIds, Set<String> upvotePostIds, Post post) {
         PostVO postVO = new PostVO();
         postVO.setPostVO(post);
         Object user = userFeign.getUserById(post.getUserId());
@@ -178,6 +181,6 @@ public class PostController {
             postVO.setIsUpvote(false);
         }
         postVO.setTags(tagService.getTagsByPostTags(postTagService.list(new QueryWrapper<PostTag>().eq("post_id", post.getId()))));
-        postVOS.add(postVO);
+        postVOs.add(postVO);
     }
 }
