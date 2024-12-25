@@ -21,7 +21,7 @@ public class TagController {
         String tagName = requestBody.get("name");
         if (tagName != null && !tagName.isEmpty()) {
             Tag tag = new Tag();
-            tag.setUserId(Long.valueOf(userId));
+            tag.setUserId(Integer.valueOf(userId));
             tag.setTag(tagName);
             tag.setCreatedOn(new Date());
             tagService.save(tag);

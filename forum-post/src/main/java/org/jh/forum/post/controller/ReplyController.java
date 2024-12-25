@@ -31,7 +31,7 @@ public class ReplyController {
 
     @PostMapping("/add")
     public void addReply(@RequestBody Reply reply, @RequestHeader("X-User-ID") String userId) {
-        reply.setUserId(Long.valueOf(userId));
+        reply.setUserId(Integer.valueOf(userId));
         reply.setCreatedOn(new Date());
         if (reply.getRoot() != 0) {
             Reply root = replyService.getById(reply.getRoot());
@@ -47,7 +47,7 @@ public class ReplyController {
     }
 
     @DeleteMapping("/del")
-    public void deleteReply(@RequestParam Long replyId) {
+    public void deleteReply(@RequestParam Integer replyId) {
         replyService.removeById(replyId);
     }
 
@@ -76,7 +76,7 @@ public class ReplyController {
     }
 
     @GetMapping("/get")
-    public Pagination<ReplyVO> getReplies(@RequestHeader("X-User-ID") String userId, @RequestParam Long postId) {
+    public Pagination<ReplyVO> getReplies(@RequestHeader("X-User-ID") String userId, @RequestParam Integer postId) {
         QueryWrapper<Reply> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("post_id", postId).orderByDesc("created_on");
         Set<String> upvoteReplyIds = redisTemplate.opsForSet().members(RedisKey.USER_REPLY_UPVOTE + userId);

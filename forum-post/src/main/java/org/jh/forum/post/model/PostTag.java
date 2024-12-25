@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class PostTag {
-    private Long id;
-    private Long postId;
-    private Long tagId;
+    private Integer id;
+    private Integer postId;
+    private Integer tagId;
 }

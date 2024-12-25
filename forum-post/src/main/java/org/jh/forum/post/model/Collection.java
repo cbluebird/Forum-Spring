@@ -10,9 +10,9 @@ import java.util.Date;
 @TableName("post_collection")
 public class Collection {
     @TableId
-    private Long id;
-    private Long postId;
-    private Long userId;
+    private Integer id;
+    private Integer postId;
+    private Integer userId;
     private Date createdOn;
     private Date deletedOn;
 }

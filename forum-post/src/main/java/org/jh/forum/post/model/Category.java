@@ -8,8 +8,8 @@ import lombok.Data;
 @TableName("categories")
 public class Category {
     @TableId
-    private Long id;
+    private Integer id;
     private String name;
     private String description;
-    private Long quoteNum;
+    private Integer quoteNum;
 }

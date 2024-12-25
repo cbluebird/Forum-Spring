@@ -8,11 +8,11 @@ import java.util.Map;
 
 @Data
 public class ReplyVO {
-    private Long id;
+    private Integer id;
     private UserVO user;
-    private Long postId;
-    private Long root;
-    private Long parent;
+    private Integer postId;
+    private Integer root;
+    private Integer parent;
     private String content;
     private String ip;
     private String ipLoc;
@@ -40,7 +40,7 @@ public class ReplyVO {
 
     public void setUserVO(Map<String, Object> userMap) {
         UserVO userVO = new UserVO();
-        userVO.setId(Long.parseLong(String.valueOf(userMap.get("id"))));
+        userVO.setId((Integer) userMap.get("id"));
         userVO.setUsername((String) userMap.get("username"));
         userVO.setNickname((String) userMap.get("nickname"));
         userVO.setAvatar((String) userMap.get("avatar"));

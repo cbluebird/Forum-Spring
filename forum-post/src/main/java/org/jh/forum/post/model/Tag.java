@@ -6,9 +6,9 @@ import java.util.Date;
 
 @Data
 public class Tag {
-    private Long id;
-    private Long userId;
+    private Integer id;
+    private Integer userId;
     private String tag;
-    private Long quoteNum;
+    private Integer quoteNum;
     private Date createdOn;
 }

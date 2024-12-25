@@ -4,5 +4,5 @@ import lombok.Data;
 
 @Data
 public class CollectDTO {
-    private Long postId;
+    private Integer postId;
 }
