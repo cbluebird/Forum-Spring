@@ -27,9 +27,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
-// TODO 添加浏览量 reply的数量
-
-
 @Validated
 @RestController
 @RequestMapping("/api/post")
