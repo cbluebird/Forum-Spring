@@ -35,12 +35,12 @@ public class ReplyController {
         reply.setCreatedOn(new Date());
         if (reply.getRoot() != 0) {
             Reply root = replyService.getById(reply.getRoot());
-            root.setReplyCount(reply.getReplyCount() + 1);
+            root.setReplyCount(root.getReplyCount() + 1);
             replyService.updateById(root);
         }
         if (reply.getParent() != 0) {
             Reply parent = replyService.getById(reply.getParent());
-            parent.setReplyCount(reply.getReplyCount() + 1);
+            parent.setReplyCount(parent.getReplyCount() + 1);
             replyService.updateById(parent);
         }
         replyService.save(reply);
