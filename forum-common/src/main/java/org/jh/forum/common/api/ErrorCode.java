@@ -10,6 +10,7 @@ public enum ErrorCode {
 
     SYSTEM_ERROR(10000, "系统异常"),
     FEIGN_ERROR(10100, "Feign调用异常"),
+    CRON_ERROR(10200, "定时任务异常"),
 
     BIZ_ERROR(20000, "业务异常"),
     COMMON_ERROR(20100, "通用异常"),
@@ -29,6 +30,7 @@ public enum ErrorCode {
     NOTICE_SERV_ERROR(20600, "NOTICE_SERV异常"),
     OSS_SERV_ERROR(20700, "OSS_SERV异常"),
     OSS_UPLOAD_ERROR(20701, "上传失败"),
+    SEARCH_SERV_ERROR(20800, "SEARCH_SERV异常"),
     ;
 
     private final Integer code;

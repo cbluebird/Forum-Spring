@@ -55,19 +55,12 @@ public class PostVO {
         userVO.setId(Long.parseLong(String.valueOf(userMap.get("id"))));
         userVO.setUsername((String) userMap.get("username"));
         userVO.setNickname((String) userMap.get("nickname"));
-        userVO.setPhone((String) userMap.get("phone"));
-        userVO.setEmail((String) userMap.get("email"));
         userVO.setAvatar((String) userMap.get("avatar"));
         this.user = userVO;
     }
 
     public void setPostContentVO(List<PostContent> postLink) {
         this.postLink = postLink;
-    }
-
-    public void setPostIsCollectAndIsUpvote(Boolean isCollect, Boolean isUpvote) {
-        this.isCollect = isCollect;
-        this.isUpvote = isUpvote;
     }
 
     public void setTags(List<Tag> tags) {

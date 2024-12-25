@@ -4,14 +4,15 @@ import lombok.Data;
 import org.jh.forum.post.model.Reply;
 
 import java.util.Date;
+import java.util.Map;
 
 @Data
 public class ReplyVO {
     private Long id;
+    private UserVO user;
     private Long postId;
     private Long root;
     private Long parent;
-    private Long userId;
     private String content;
     private String ip;
     private String ipLoc;
@@ -27,7 +28,6 @@ public class ReplyVO {
         this.postId = reply.getPostId();
         this.root = reply.getRoot();
         this.parent = reply.getParent();
-        this.userId = reply.getUserId();
         this.content = reply.getContent();
         this.ip = reply.getIp();
         this.ipLoc = reply.getIpLoc();
@@ -36,5 +36,14 @@ public class ReplyVO {
         this.thumbsUpCount = reply.getThumbsUpCount();
         this.thumbsDownCount = reply.getThumbsDownCount();
         this.createdOn = reply.getCreatedOn();
+    }
+
+    public void setUserVO(Map<String, Object> userMap) {
+        UserVO userVO = new UserVO();
+        userVO.setId(Long.parseLong(String.valueOf(userMap.get("id"))));
+        userVO.setUsername((String) userMap.get("username"));
+        userVO.setNickname((String) userMap.get("nickname"));
+        userVO.setAvatar((String) userMap.get("avatar"));
+        this.user = userVO;
     }
 }

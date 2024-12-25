@@ -3,6 +3,7 @@ package org.jh.forum.post.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jh.forum.common.api.Pagination;
+import org.jh.forum.post.constant.RedisKey;
 import org.jh.forum.post.dto.StarDTO;
 import org.jh.forum.post.model.Post;
 import org.jh.forum.post.model.Star;
@@ -10,9 +11,9 @@ import org.jh.forum.post.service.IPostService;
 import org.jh.forum.post.service.IStarService;
 import org.jh.forum.post.service.impl.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import redis.clients.jedis.Jedis;
 
 import java.util.Date;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
 @Validated
 @RestController
 @RequestMapping("/api/post/star")
-public class StarController {
+public class UpvoteController {
 
     @Autowired
     private IStarService starService;
@@ -30,7 +31,7 @@ public class StarController {
     private IPostService postService;
 
     @Autowired
-    private Jedis jedis;
+    private RedisTemplate<String, String> redisTemplate;
 
     @Autowired
     private TaskService taskService;
@@ -49,10 +50,9 @@ public class StarController {
             star.setUserId(userIdLong);
             star.setCreatedOn(new Date());
             starService.save(star);
-
             post.setUpvoteCount(post.getUpvoteCount() + 1);
             postService.updateById(post);
-            jedis.sadd(userId + "-star", String.valueOf(starReq.getPostId()));
+            redisTemplate.opsForSet().add(RedisKey.USER_POST_UPVOTE + userId, String.valueOf(starReq.getPostId()));
             taskService.setData(String.valueOf(starReq.getPostId()));
         }
     }
@@ -68,10 +68,9 @@ public class StarController {
         Star existingStar = starService.getOne(queryWrapper);
         if (existingStar != null) {
             starService.remove(queryWrapper);
-
             post.setUpvoteCount(post.getUpvoteCount() - 1);
             postService.updateById(post);
-            jedis.srem(userId + "-star", String.valueOf(post.getId()));
+            redisTemplate.opsForSet().remove(RedisKey.USER_POST_UPVOTE + userId, String.valueOf(starReq.getPostId()));
         }
     }
 

@@ -1,31 +1,33 @@
 package org.jh.forum.post.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.jh.forum.common.api.Pagination;
+import org.jh.forum.post.constant.RedisKey;
 import org.jh.forum.post.dto.ReplyStarDTO;
+import org.jh.forum.post.feign.UserFeign;
 import org.jh.forum.post.model.Reply;
 import org.jh.forum.post.service.IReplyService;
 import org.jh.forum.post.vo.ReplyVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import redis.clients.jedis.Jedis;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Validated
 @RestController
 @RequestMapping("/api/post/reply")
 public class ReplyController {
-
     @Autowired
     private IReplyService replyService;
 
     @Autowired
-    private Jedis jedis;
+    private UserFeign userFeign;
+
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
 
     @PostMapping("/add")
     public void addReply(@RequestBody Reply reply, @RequestHeader("X-User-ID") String userId) {
@@ -45,18 +47,21 @@ public class ReplyController {
         if (reply != null) {
             reply.setThumbsUpCount(reply.getThumbsUpCount() + 1);
             replyService.updateById(reply);
-            jedis.sadd(userId + "-reply-star", String.valueOf(replyStarDTO.getReplyId()));
+            redisTemplate.opsForSet().add(RedisKey.USER_REPLY_UPVOTE + userId, String.valueOf(replyStarDTO.getReplyId()));
         }
     }
 
     @PostMapping("/unlike")
     public void unlikeReply(@RequestHeader("X-User-ID") String userId, @RequestBody ReplyStarDTO replyStarDTO) {
         Reply reply = replyService.getById(replyStarDTO.getReplyId());
-        Set<String> upvotedPostIds = jedis.smembers(userId + "-reply-star");
-        if (upvotedPostIds.contains(String.valueOf(reply.getId()))) {
+        Set<String> upvoteReplyIds = redisTemplate.opsForSet().members(RedisKey.USER_REPLY_UPVOTE + userId);
+        if (upvoteReplyIds == null) {
+            upvoteReplyIds = new HashSet<>();
+        }
+        if (upvoteReplyIds.contains(String.valueOf(reply.getId()))) {
             reply.setThumbsUpCount(reply.getThumbsUpCount() - 1);
             replyService.updateById(reply);
-            jedis.srem(userId + "-reply-star", String.valueOf(replyStarDTO.getReplyId()));
+            redisTemplate.opsForSet().remove(RedisKey.USER_REPLY_UPVOTE + userId, String.valueOf(replyStarDTO.getReplyId()));
         }
     }
 
@@ -64,22 +69,21 @@ public class ReplyController {
     public Pagination<ReplyVO> getReplies(@RequestHeader("X-User-ID") String userId, @RequestParam Long postId) {
         QueryWrapper<Reply> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("post_id", postId).orderByDesc("created_on");
-        Set<String> upvotedPostIds = null;
-        if (jedis.exists(userId + "-reply-star")) {
-            upvotedPostIds = jedis.smembers(userId + "-reply-star");
+        Set<String> upvoteReplyIds = redisTemplate.opsForSet().members(RedisKey.USER_REPLY_UPVOTE + userId);
+        if (upvoteReplyIds == null) {
+            upvoteReplyIds = new HashSet<>();
         }
         List<Reply> replies = replyService.list(queryWrapper);
-        List<ReplyVO> replyVOArrayList = new ArrayList<>();
+        List<ReplyVO> replyVOs = new ArrayList<>();
         for (Reply reply : replies) {
             ReplyVO replyVO = new ReplyVO();
             replyVO.setReplyVO(reply);
-            if (upvotedPostIds != null) {
-                replyVO.setIsUpvote(upvotedPostIds.contains(reply.getId().toString()));
-            } else {
-                replyVO.setIsUpvote(false);
-            }
-            replyVOArrayList.add(replyVO);
+            replyVO.setIsUpvote(upvoteReplyIds.contains(reply.getId().toString()));
+            Object user = userFeign.getUserById(reply.getUserId());
+            Map<String, Object> userMap = BeanUtil.beanToMap(user);
+            replyVO.setUserVO(userMap);
+            replyVOs.add(replyVO);
         }
-        return Pagination.of(replyVOArrayList, 1L, 10L, (long) replyVOArrayList.size());
+        return Pagination.of(replyVOs, 1L, 10L, (long) replyVOs.size());
     }
 }
