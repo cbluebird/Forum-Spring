@@ -8,14 +8,11 @@ import org.jh.forum.common.api.ErrorCode;
 import org.jh.forum.common.api.Pagination;
 import org.jh.forum.common.exception.BizException;
 import org.jh.forum.post.constant.RedisKey;
-import org.jh.forum.post.dto.PostContentDTO;
 import org.jh.forum.post.dto.PostDTO;
 import org.jh.forum.post.dto.PostIdDTO;
 import org.jh.forum.post.feign.UserFeign;
 import org.jh.forum.post.model.Post;
-import org.jh.forum.post.model.PostContent;
 import org.jh.forum.post.model.PostTag;
-import org.jh.forum.post.service.IPostContentService;
 import org.jh.forum.post.service.IPostService;
 import org.jh.forum.post.service.IPostTagService;
 import org.jh.forum.post.service.ITagService;
@@ -33,9 +30,6 @@ import java.util.*;
 public class PostController {
     @Autowired
     private IPostService postService;
-
-    @Autowired
-    private IPostContentService postContentService;
 
     @Autowired
     private UserFeign userFeign;
@@ -63,18 +57,6 @@ public class PostController {
 
         postService.save(post);
         Integer postId = post.getId();
-
-        if (postDTO.getLink() != null) {
-            for (PostContentDTO contentDTO : postDTO.getLink()) {
-                PostContent postContent = new PostContent();
-                postContent.setPostId(postId);
-                postContent.setContent(contentDTO.getContent());
-                postContent.setType(contentDTO.getType());
-                postContent.setIsDel(false);
-
-                postContentService.save(postContent);
-            }
-        }
 
         if (postDTO.getTags() != null) {
             for (Integer tagId : postDTO.getTags()) {
@@ -136,7 +118,6 @@ public class PostController {
         Object user = userFeign.getUserById(post.getUserId());
         Map<String, Object> userMap = BeanUtil.beanToMap(user);
         postVO.setUserVO(userMap);
-        postVO.setPostContentVO(postContentService.list(new QueryWrapper<PostContent>().eq("post_id", postId)));
         postVO.setTags(tagService.getTagsByPostTags(postTagService.list(new QueryWrapper<PostTag>().eq("post_id", post.getId()))));
         return postVO;
     }

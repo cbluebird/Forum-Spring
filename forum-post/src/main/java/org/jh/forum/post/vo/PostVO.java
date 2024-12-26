@@ -1,10 +1,8 @@
 package org.jh.forum.post.vo;
 
 import lombok.Data;
-import lombok.Setter;
 import org.jh.forum.post.constant.Visibility;
 import org.jh.forum.post.model.Post;
-import org.jh.forum.post.model.PostContent;
 import org.jh.forum.post.model.Tag;
 
 import java.util.ArrayList;
@@ -30,8 +28,6 @@ public class PostVO {
     private String ipLoc;
     private Date createdOn;
     private Date modifiedOn;
-    private List<PostContent> postLink;
-    @Setter
     private List<TagVO> tags;
 
     public void setPostVO(Post post) {
@@ -59,10 +55,6 @@ public class PostVO {
         userVO.setNickname((String) userMap.get("nickname"));
         userVO.setAvatar((String) userMap.get("avatar"));
         this.user = userVO;
-    }
-
-    public void setPostContentVO(List<PostContent> postLink) {
-        this.postLink = postLink;
     }
 
     public void setTags(List<Tag> tags) {
