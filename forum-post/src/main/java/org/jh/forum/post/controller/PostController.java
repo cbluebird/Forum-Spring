@@ -13,9 +13,12 @@ import org.jh.forum.post.dto.PostIdDTO;
 import org.jh.forum.post.feign.UserFeign;
 import org.jh.forum.post.model.Post;
 import org.jh.forum.post.model.PostTag;
+import org.jh.forum.post.model.Reply;
 import org.jh.forum.post.service.IPostService;
 import org.jh.forum.post.service.IPostTagService;
+import org.jh.forum.post.service.IReplyService;
 import org.jh.forum.post.service.ITagService;
+import org.jh.forum.post.service.impl.TaskService;
 import org.jh.forum.post.vo.PostVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -23,6 +26,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+
+
+// TODO 查询时候的事务
+// TODO tag热榜
 
 @Validated
 @RestController
@@ -42,6 +49,11 @@ public class PostController {
 
     @Autowired
     private ITagService tagService;
+
+    @Autowired
+    private IReplyService replyService;
+    @Autowired
+    private TaskService taskService;
 
     @PostMapping("/add")
     public void addPost(@RequestHeader("X-User-ID") String userId, @RequestBody @Validated PostDTO postDTO) {
@@ -70,8 +82,18 @@ public class PostController {
     @PostMapping("/del")
     public void deletePost(@RequestBody PostIdDTO id) {
         if (!postService.removeById(id.getId())) {
-            throw new BizException(ErrorCode.POST_NOT_FOUND, "Failed to delete post with ID");
+            throw new BizException(ErrorCode.POST_NOT_FOUND, "Post not found with ID: " + id.getId());
         }
+
+        QueryWrapper<PostTag> queryPostTagWrapper = new QueryWrapper<>();
+        queryPostTagWrapper.eq("post_id", id.getId());
+        postTagService.remove(queryPostTagWrapper);
+
+        QueryWrapper<Reply> queryReplyWrapper = new QueryWrapper<>();
+        queryReplyWrapper.eq("post_id", id.getId());
+        replyService.remove(queryReplyWrapper);
+
+        taskService.delKey(String.valueOf(id.getId()));
     }
 
     @PutMapping("/{id}")
@@ -86,6 +108,28 @@ public class PostController {
         IPage<Post> page = new Page<>(pageNum, pageSize);
         QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("category_id", categoryId);
+        IPage<Post> userPage = postService.page(page, queryWrapper);
+        List<PostVO> postVOs = new ArrayList<>();
+        Set<String> upvotePostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
+        if (upvotePostIds == null) {
+            upvotePostIds = new HashSet<>();
+        }
+        Set<String> collectPostIds = redisTemplate.opsForSet().members(RedisKey.USER_COLLECTION + userId);
+        if (collectPostIds == null) {
+            collectPostIds = new HashSet<>();
+        }
+        for (Post post : userPage.getRecords()) {
+            setPage(postVOs, collectPostIds, upvotePostIds, post);
+        }
+        Long total = postService.count(queryWrapper);
+        return Pagination.of(postVOs, userPage.getCurrent(), userPage.getSize(), total);
+    }
+
+    @GetMapping("/list/user")
+    public Pagination<PostVO> getPostListByUser(@RequestHeader("X-User-ID") String userId, @RequestParam int pageNum, @RequestParam int pageSize, @RequestParam int authorId) {
+        IPage<Post> page = new Page<>(pageNum, pageSize);
+        QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_id", authorId);
         IPage<Post> userPage = postService.page(page, queryWrapper);
         List<PostVO> postVOs = new ArrayList<>();
         Set<String> upvotePostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
