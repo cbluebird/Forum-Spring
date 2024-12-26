@@ -40,6 +40,7 @@ spring:
 mybatis-plus:
   global-config:
     db-config:
+      id-type: auto
       logic-delete-field: deletedOn
       logic-delete-value: now()
       logic-not-delete-value: 'null'
