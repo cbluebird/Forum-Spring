@@ -24,6 +24,15 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
+// TODO 根据userid查询用户的帖子列表
+// TODO 删除帖子的同时删除评论
+// TODO 按照tag 查询帖子
+// TODO 热榜-
+// TODO 点赞收藏的响应没有用户信息
+// TODO 查询时候的事务
+// TODO tag热榜
+
+
 @Validated
 @RestController
 @RequestMapping("/api/post")
@@ -86,6 +95,28 @@ public class PostController {
         IPage<Post> page = new Page<>(pageNum, pageSize);
         QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("category_id", categoryId);
+        IPage<Post> userPage = postService.page(page, queryWrapper);
+        List<PostVO> postVOs = new ArrayList<>();
+        Set<String> upvotePostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
+        if (upvotePostIds == null) {
+            upvotePostIds = new HashSet<>();
+        }
+        Set<String> collectPostIds = redisTemplate.opsForSet().members(RedisKey.USER_COLLECTION + userId);
+        if (collectPostIds == null) {
+            collectPostIds = new HashSet<>();
+        }
+        for (Post post : userPage.getRecords()) {
+            setPage(postVOs, collectPostIds, upvotePostIds, post);
+        }
+        Long total = postService.count(queryWrapper);
+        return Pagination.of(postVOs, userPage.getCurrent(), userPage.getSize(), total);
+    }
+
+    @GetMapping("/list/user")
+    public Pagination<PostVO> getPostListByUser(@RequestHeader("X-User-ID") String userId, @RequestParam int pageNum, @RequestParam int pageSize, @RequestParam int authorId) {
+        IPage<Post> page = new Page<>(pageNum, pageSize);
+        QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_id", authorId);
         IPage<Post> userPage = postService.page(page, queryWrapper);
         List<PostVO> postVOs = new ArrayList<>();
         Set<String> upvotePostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
