@@ -7,8 +7,8 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-@TableName("post_star")
-public class Star {
+@TableName("post_upvote")
+public class Upvote {
     @TableId
     private Integer id;
     private Integer postId;

@@ -4,7 +4,6 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.jh.forum.common.api.Pagination;
 import org.jh.forum.post.constant.RedisKey;
-import org.jh.forum.post.dto.ReplyStarDTO;
 import org.jh.forum.post.feign.UserFeign;
 import org.jh.forum.post.model.Reply;
 import org.jh.forum.post.service.IReplyService;
@@ -49,30 +48,6 @@ public class ReplyController {
     @DeleteMapping("/del")
     public void deleteReply(@RequestParam Integer replyId) {
         replyService.removeById(replyId);
-    }
-
-    @PostMapping("/like")
-    public void likeReply(@RequestHeader("X-User-ID") String userId, @RequestBody ReplyStarDTO replyStarDTO) {
-        Reply reply = replyService.getById(replyStarDTO.getReplyId());
-        if (reply != null) {
-            reply.setThumbsUpCount(reply.getThumbsUpCount() + 1);
-            replyService.updateById(reply);
-            redisTemplate.opsForSet().add(RedisKey.USER_REPLY_UPVOTE + userId, String.valueOf(replyStarDTO.getReplyId()));
-        }
-    }
-
-    @PostMapping("/unlike")
-    public void unlikeReply(@RequestHeader("X-User-ID") String userId, @RequestBody ReplyStarDTO replyStarDTO) {
-        Reply reply = replyService.getById(replyStarDTO.getReplyId());
-        Set<String> upvoteReplyIds = redisTemplate.opsForSet().members(RedisKey.USER_REPLY_UPVOTE + userId);
-        if (upvoteReplyIds == null) {
-            upvoteReplyIds = new HashSet<>();
-        }
-        if (upvoteReplyIds.contains(String.valueOf(reply.getId()))) {
-            reply.setThumbsUpCount(reply.getThumbsUpCount() - 1);
-            replyService.updateById(reply);
-            redisTemplate.opsForSet().remove(RedisKey.USER_REPLY_UPVOTE + userId, String.valueOf(replyStarDTO.getReplyId()));
-        }
     }
 
     @GetMapping("/get")

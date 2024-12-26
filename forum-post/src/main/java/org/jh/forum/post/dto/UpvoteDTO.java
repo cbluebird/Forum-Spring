@@ -3,6 +3,6 @@ package org.jh.forum.post.dto;
 import lombok.Data;
 
 @Data
-public class StarDTO {
+public class UpvoteDTO {
     private Integer postId;
 }

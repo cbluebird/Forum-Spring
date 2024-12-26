@@ -19,9 +19,8 @@ public class Reply {
     private String ip;
     private String ipLoc;
     private Boolean isEssence;
+    private Integer upvoteCount;
     private Integer replyCount;
-    private Integer thumbsUpCount;
-    private Integer thumbsDownCount;
     private Date createdOn;
     private Date modifiedOn;
     private Date deletedOn;
