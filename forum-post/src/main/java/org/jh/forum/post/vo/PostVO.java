@@ -1,14 +1,12 @@
 package org.jh.forum.post.vo;
 
 import lombok.Data;
-import lombok.Setter;
 import org.jh.forum.post.constant.Visibility;
 import org.jh.forum.post.model.Post;
-import org.jh.forum.post.model.PostContent;
 import org.jh.forum.post.model.Tag;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -18,26 +16,24 @@ public class PostVO {
     private UserVO user;
     private String title;
     private String content;
-    private Integer commentCount;
-    private Integer collectionCount;
-    private Integer upvoteCount;
     private Integer viewCount;
+    private Integer upvoteCount;
+    private Integer replyCount;
+    private Integer collectionCount;
     private Integer shareCount;
     private Boolean isCollect;
     private Boolean isUpvote;
     private Visibility visibility;
     private String ip;
     private String ipLoc;
-    private Date createdOn;
-    private List<PostContent> postLink;
-    @Setter
+    private LocalDateTime createdOn;
     private List<TagVO> tags;
 
     public void setPostVO(Post post) {
         this.id = post.getId();
         this.title = post.getTitle();
         this.content = post.getContent();
-        this.commentCount = post.getCommentCount();
+        this.replyCount = post.getReplyCount();
         this.collectionCount = post.getCollectionCount();
         this.upvoteCount = post.getUpvoteCount();
         this.viewCount = post.getViewCount();
@@ -57,10 +53,6 @@ public class PostVO {
         userVO.setNickname((String) userMap.get("nickname"));
         userVO.setAvatar((String) userMap.get("avatar"));
         this.user = userVO;
-    }
-
-    public void setPostContentVO(List<PostContent> postLink) {
-        this.postLink = postLink;
     }
 
     public void setTags(List<Tag> tags) {

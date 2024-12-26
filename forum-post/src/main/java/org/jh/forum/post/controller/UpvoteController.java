@@ -4,82 +4,106 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jh.forum.common.api.Pagination;
 import org.jh.forum.post.constant.RedisKey;
-import org.jh.forum.post.dto.StarDTO;
+import org.jh.forum.post.dto.ReplyUpvoteDTO;
+import org.jh.forum.post.dto.UpvoteDTO;
 import org.jh.forum.post.model.Post;
-import org.jh.forum.post.model.Star;
+import org.jh.forum.post.model.Reply;
+import org.jh.forum.post.model.Upvote;
 import org.jh.forum.post.service.IPostService;
-import org.jh.forum.post.service.IStarService;
+import org.jh.forum.post.service.IReplyService;
+import org.jh.forum.post.service.IUpvoteService;
 import org.jh.forum.post.service.impl.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Validated
 @RestController
-@RequestMapping("/api/post/star")
+@RequestMapping("/api/post")
 public class UpvoteController {
-
     @Autowired
-    private IStarService starService;
-
+    private IUpvoteService upvoteService;
     @Autowired
     private IPostService postService;
-
+    @Autowired
+    private IReplyService replyService;
+    @Autowired
+    private TaskService taskService;
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
-    @Autowired
-    private TaskService taskService;
-
-    @PostMapping("/add")
-    public void likePost(@RequestBody StarDTO starReq, @RequestHeader("X-User-ID") String userId) {
-        Post post = postService.getById(starReq.getPostId());
-        QueryWrapper<Star> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("post_id", starReq.getPostId()).eq("user_id", userId);
-
-        Star existingStar = starService.getOne(queryWrapper);
-        if (existingStar == null) {
-            Star star = new Star();
-            star.setPostId(starReq.getPostId());
-            star.setUserId(Integer.valueOf(userId));
-            star.setCreatedOn(new Date());
-            starService.save(star);
+    @PostMapping("/upvote")
+    public void upvotePost(@RequestHeader("X-User-ID") String userId, @RequestBody UpvoteDTO upvoteDTO) {
+        Post post = postService.getById(upvoteDTO.getPostId());
+        QueryWrapper<Upvote> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("post_id", upvoteDTO.getPostId()).eq("user_id", userId);
+        if (upvoteService.getOne(queryWrapper) == null) {
+            Upvote upvote = new Upvote();
+            upvote.setPostId(upvoteDTO.getPostId());
+            upvote.setUserId(Integer.valueOf(userId));
+            upvoteService.save(upvote);
             post.setUpvoteCount(post.getUpvoteCount() + 1);
             postService.updateById(post);
-            redisTemplate.opsForSet().add(RedisKey.USER_POST_UPVOTE + userId, String.valueOf(starReq.getPostId()));
-            taskService.setData(String.valueOf(starReq.getPostId()));
+            redisTemplate.opsForSet().add(RedisKey.USER_POST_UPVOTE + userId, String.valueOf(upvoteDTO.getPostId()));
+            taskService.setData(String.valueOf(upvoteDTO.getPostId()));
         }
     }
 
-    @PostMapping("/del")
-    public void unlikePost(@RequestBody StarDTO starReq, @RequestHeader("X-User-ID") String userId) {
-        QueryWrapper<Star> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("post_id", starReq.getPostId()).eq("user_id", userId);
-
-        Post post = postService.getById(starReq.getPostId());
-
-        Star existingStar = starService.getOne(queryWrapper);
-        if (existingStar != null) {
-            starService.remove(queryWrapper);
+    @PostMapping("/downvote")
+    public void downvotePost(@RequestHeader("X-User-ID") String userId, @RequestBody UpvoteDTO upvoteDTO) {
+        Post post = postService.getById(upvoteDTO.getPostId());
+        QueryWrapper<Upvote> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("post_id", upvoteDTO.getPostId()).eq("user_id", userId);
+        if (upvoteService.getOne(queryWrapper) != null) {
+            upvoteService.remove(queryWrapper);
             post.setUpvoteCount(post.getUpvoteCount() - 1);
             postService.updateById(post);
-            redisTemplate.opsForSet().remove(RedisKey.USER_POST_UPVOTE + userId, String.valueOf(starReq.getPostId()));
+            redisTemplate.opsForSet().remove(RedisKey.USER_POST_UPVOTE + userId, String.valueOf(upvoteDTO.getPostId()));
         }
     }
 
-    @GetMapping("/get")
-    public Pagination<Post> getPostStarPage(@RequestParam Long pageNum, @RequestParam Long pageSize, @RequestHeader("X-User-ID") String userId) {
-        QueryWrapper<Star> queryWrapper = new QueryWrapper<>();
+    @GetMapping("/upvote/list")
+    public Pagination<Post> getPostUpvoteList(@RequestHeader("X-User-ID") String userId,
+                                              @RequestParam(name = "pageNum", defaultValue = "1") Long pageNum,
+                                              @RequestParam(name = "pageSize", defaultValue = "10") Long pageSize) {
+        QueryWrapper<Upvote> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_id", userId).orderByDesc("created_on");
+        Page<Upvote> upvotePage = upvoteService.page(new Page<>(pageNum, pageSize), queryWrapper);
+        List<Integer> postIds = upvotePage.getRecords().stream().map(Upvote::getPostId).collect(Collectors.toList());
+        return Pagination.of(postService.listByIds(postIds), upvotePage.getCurrent(), upvotePage.getSize(), upvotePage.getTotal());
+    }
 
-        Page<Star> starPage = starService.page(new Page<>(pageNum, pageSize), queryWrapper);
-        List<Integer> postIds = starPage.getRecords().stream().map(Star::getPostId).collect(Collectors.toList());
-        Long total = starService.count(queryWrapper);
-        return Pagination.of(postService.listByIds(postIds), starPage.getCurrent(), starPage.getSize(), total);
+    @PostMapping("/reply/upvote")
+    public void upvoteReply(@RequestHeader("X-User-ID") String userId, @RequestBody ReplyUpvoteDTO replyUpvoteDTO) {
+        Reply reply = replyService.getById(replyUpvoteDTO.getReplyId());
+        Set<String> upvoteReplyIds = redisTemplate.opsForSet().members(RedisKey.USER_REPLY_UPVOTE + userId);
+        if (upvoteReplyIds == null) {
+            upvoteReplyIds = new HashSet<>();
+        }
+        if (!upvoteReplyIds.contains(String.valueOf(reply.getId()))) {
+            reply.setUpvoteCount(reply.getUpvoteCount() + 1);
+            replyService.updateById(reply);
+            redisTemplate.opsForSet().add(RedisKey.USER_REPLY_UPVOTE + userId, String.valueOf(replyUpvoteDTO.getReplyId()));
+        }
+    }
+
+    @PostMapping("/reply/downvote")
+    public void downvoteReply(@RequestHeader("X-User-ID") String userId, @RequestBody ReplyUpvoteDTO replyUpvoteDTO) {
+        Reply reply = replyService.getById(replyUpvoteDTO.getReplyId());
+        Set<String> upvoteReplyIds = redisTemplate.opsForSet().members(RedisKey.USER_REPLY_UPVOTE + userId);
+        if (upvoteReplyIds == null) {
+            upvoteReplyIds = new HashSet<>();
+        }
+        if (upvoteReplyIds.contains(String.valueOf(reply.getId()))) {
+            reply.setUpvoteCount(reply.getUpvoteCount() - 1);
+            replyService.updateById(reply);
+            redisTemplate.opsForSet().remove(RedisKey.USER_REPLY_UPVOTE + userId, String.valueOf(replyUpvoteDTO.getReplyId()));
+        }
     }
 }

@@ -4,15 +4,14 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
-@TableName("post_star")
-public class Star {
+@TableName("post_upvote")
+public class Upvote {
     @TableId
     private Integer id;
     private Integer postId;
     private Integer userId;
-    private Date createdOn;
-    private Date deletedOn;
+    private LocalDateTime createdOn;
 }

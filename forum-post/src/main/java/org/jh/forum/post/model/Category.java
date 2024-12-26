@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 @Data
-@TableName("categories")
+@TableName("category")
 public class Category {
     @TableId
     private Integer id;

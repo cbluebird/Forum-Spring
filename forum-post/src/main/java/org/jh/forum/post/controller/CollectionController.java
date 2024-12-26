@@ -15,7 +15,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,7 +45,6 @@ public class CollectionController {
             Collection collection = new Collection();
             collection.setPostId(collectReq.getPostId());
             collection.setUserId(Integer.valueOf(userId));
-            collection.setCreatedOn(new Date());
             collectionService.save(collection);
 
             post.setCollectionCount(post.getCollectionCount() + 1);

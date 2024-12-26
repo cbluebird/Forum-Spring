@@ -3,7 +3,7 @@ package org.jh.forum.post.vo;
 import lombok.Data;
 import org.jh.forum.post.model.Reply;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Data
@@ -17,10 +17,9 @@ public class ReplyVO {
     private String ip;
     private String ipLoc;
     private Boolean isEssence;
+    private Integer upvoteCount;
     private Integer replyCount;
-    private Integer thumbsUpCount;
-    private Integer thumbsDownCount;
-    private Date createdOn;
+    private LocalDateTime createdOn;
     private Boolean isUpvote;
 
     public void setReplyVO(Reply reply) {
@@ -32,9 +31,8 @@ public class ReplyVO {
         this.ip = reply.getIp();
         this.ipLoc = reply.getIpLoc();
         this.isEssence = reply.getIsEssence();
+        this.upvoteCount = reply.getUpvoteCount();
         this.replyCount = reply.getReplyCount();
-        this.thumbsUpCount = reply.getThumbsUpCount();
-        this.thumbsDownCount = reply.getThumbsDownCount();
         this.createdOn = reply.getCreatedOn();
     }
 

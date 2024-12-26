@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @TableName("post_collection")
@@ -13,6 +13,5 @@ public class Collection {
     private Integer id;
     private Integer postId;
     private Integer userId;
-    private Date createdOn;
-    private Date deletedOn;
+    private LocalDateTime createdOn;
 }

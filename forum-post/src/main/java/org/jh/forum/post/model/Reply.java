@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @TableName("reply")
@@ -19,10 +19,9 @@ public class Reply {
     private String ip;
     private String ipLoc;
     private Boolean isEssence;
+    private Integer upvoteCount;
     private Integer replyCount;
-    private Integer thumbsUpCount;
-    private Integer thumbsDownCount;
-    private Date createdOn;
-    private Date modifiedOn;
-    private Date deletedOn;
+    private LocalDateTime createdOn;
+    private LocalDateTime modifiedOn;
+    private LocalDateTime deletedOn;
 }

@@ -37,3 +37,9 @@ spring:
           max-wait: -1ms
           max-idle: 8
           min-idle: 0
+mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-field: deletedOn
+      logic-delete-value: now()
+      logic-not-delete-value: 'null'

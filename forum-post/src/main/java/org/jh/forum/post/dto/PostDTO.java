@@ -9,14 +9,11 @@ import org.jh.forum.post.constant.Visibility;
 public class PostDTO {
     @NotNull(message = "Category ID cannot be null")
     private Integer categoryId;
-
     @NotBlank(message = "Title cannot be blank")
     private String title;
-
     private Visibility visibility;
     private String ip;
     private String ipLoc;
     private String content;
-    private PostContentDTO[] link;
     private Integer[] tags;
 }
