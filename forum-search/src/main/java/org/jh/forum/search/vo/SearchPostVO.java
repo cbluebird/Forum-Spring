@@ -12,7 +12,7 @@ public class SearchPostVO {
     private String content;
     private Integer viewCount;
     private Integer upvoteCount;
-    private Integer commentCount;
+    private Integer replyCount;
     private Integer collectionCount;
     private Integer shareCount;
     private String ip;

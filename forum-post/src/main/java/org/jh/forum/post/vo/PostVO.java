@@ -18,10 +18,10 @@ public class PostVO {
     private UserVO user;
     private String title;
     private String content;
-    private Integer commentCount;
-    private Integer collectionCount;
-    private Integer upvoteCount;
     private Integer viewCount;
+    private Integer upvoteCount;
+    private Integer replyCount;
+    private Integer collectionCount;
     private Integer shareCount;
     private Boolean isCollect;
     private Boolean isUpvote;
@@ -29,6 +29,7 @@ public class PostVO {
     private String ip;
     private String ipLoc;
     private Date createdOn;
+    private Date modifiedOn;
     private List<PostContent> postLink;
     @Setter
     private List<TagVO> tags;
@@ -37,7 +38,7 @@ public class PostVO {
         this.id = post.getId();
         this.title = post.getTitle();
         this.content = post.getContent();
-        this.commentCount = post.getCommentCount();
+        this.replyCount = post.getReplyCount();
         this.collectionCount = post.getCollectionCount();
         this.upvoteCount = post.getUpvoteCount();
         this.viewCount = post.getViewCount();
@@ -46,6 +47,7 @@ public class PostVO {
         this.ip = post.getIp();
         this.ipLoc = post.getIpLoc();
         this.createdOn = post.getCreatedOn();
+        this.modifiedOn = post.getModifiedOn();
         this.isCollect = false;
         this.isUpvote = false;
     }
