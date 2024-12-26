@@ -3,9 +3,7 @@ package org.jh.forum.post.controller;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.jh.forum.common.api.ErrorCode;
 import org.jh.forum.common.api.Pagination;
-import org.jh.forum.common.exception.BizException;
 import org.jh.forum.post.constant.RedisKey;
 import org.jh.forum.post.dto.ReplyUpvoteDTO;
 import org.jh.forum.post.dto.UpvoteDTO;
@@ -93,9 +91,6 @@ public class UpvoteController {
         }
         for (Integer postId : postIds) {
             Post post = postService.getById(postId);
-            if (post == null) {
-                throw new BizException(ErrorCode.POST_NOT_FOUND, "Post not found with ID: " + postId);
-            }
             setPage(postVOs, upvotePostIds, post);
         }
         return Pagination.of(postVOs, upvotePage.getCurrent(), upvotePage.getSize(), total);
@@ -131,6 +126,10 @@ public class UpvoteController {
 
     private void setPage(List<PostVO> postVOs, Set<String> collectedPostIds, Post post) {
         PostVO postVO = new PostVO();
+        if (post == null) {
+            postVOs.add(postVO);
+            return;
+        }
         postVO.setPostVO(post);
         Object user = userFeign.getUserById(post.getUserId());
         Map<String, Object> userMap = BeanUtil.beanToMap(user);

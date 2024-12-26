@@ -3,9 +3,7 @@ package org.jh.forum.post.controller;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.jh.forum.common.api.ErrorCode;
 import org.jh.forum.common.api.Pagination;
-import org.jh.forum.common.exception.BizException;
 import org.jh.forum.post.constant.RedisKey;
 import org.jh.forum.post.dto.CollectDTO;
 import org.jh.forum.post.feign.UserFeign;
@@ -24,7 +22,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Validated
 @RestController
@@ -94,7 +91,7 @@ public class CollectionController {
         QueryWrapper<Collection> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_id", userId).orderByDesc("created_on");
         Page<Collection> collectionPage = collectionService.page(new Page<>(pageNum, pageSize), queryWrapper);
-        List<Integer> postIds = collectionPage.getRecords().stream().map(Collection::getPostId).collect(Collectors.toList());
+        List<Integer> postIds = collectionPage.getRecords().stream().map(Collection::getPostId).toList();
         Long total = collectionService.count(queryWrapper);
         Set<String> collectedPostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
         List<PostVO> postVOs = new ArrayList<>();
@@ -103,9 +100,6 @@ public class CollectionController {
         }
         for (Integer postId : postIds) {
             Post post = postService.getById(postId);
-            if (post == null) {
-                throw new BizException(ErrorCode.POST_NOT_FOUND, "Post not found with ID: " + postId);
-            }
             setPage(postVOs, collectedPostIds, post);
         }
         return Pagination.of(postVOs, collectionPage.getCurrent(), collectionPage.getSize(), total);
@@ -113,6 +107,10 @@ public class CollectionController {
 
     private void setPage(List<PostVO> postVOs, Set<String> upvotePostIds, Post post) {
         PostVO postVO = new PostVO();
+        if (post == null) {
+            postVOs.add(postVO);
+            return;
+        }
         postVO.setPostVO(post);
         Object user = userFeign.getUserById(post.getUserId());
         Map<String, Object> userMap = BeanUtil.beanToMap(user);

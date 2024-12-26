@@ -32,6 +32,14 @@ public class TaskService {
         redisTemplate.opsForZSet().incrementScore(RedisKey.HOT_POST_HOUR + hour, postId, -1);
     }
 
+    public void delKey(String postId) {
+        long hour = System.currentTimeMillis() / (1000 * 60 * 60);
+        String key = RedisKey.HOT_POST_HOUR + hour;
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(key)) && redisTemplate.opsForZSet().score(key, postId) != null) {
+            redisTemplate.opsForZSet().remove(key, postId);
+        }
+    }
+
     public void refreshDay() {
         long hour = System.currentTimeMillis() / (1000 * 60 * 60);
         List<String> otherKeys = new ArrayList<>();

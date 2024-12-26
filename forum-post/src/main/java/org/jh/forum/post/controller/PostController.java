@@ -13,9 +13,12 @@ import org.jh.forum.post.dto.PostIdDTO;
 import org.jh.forum.post.feign.UserFeign;
 import org.jh.forum.post.model.Post;
 import org.jh.forum.post.model.PostTag;
+import org.jh.forum.post.model.Reply;
 import org.jh.forum.post.service.IPostService;
 import org.jh.forum.post.service.IPostTagService;
+import org.jh.forum.post.service.IReplyService;
 import org.jh.forum.post.service.ITagService;
+import org.jh.forum.post.service.impl.TaskService;
 import org.jh.forum.post.vo.PostVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -47,6 +50,11 @@ public class PostController {
     @Autowired
     private ITagService tagService;
 
+    @Autowired
+    private IReplyService replyService;
+    @Autowired
+    private TaskService taskService;
+
     @PostMapping("/add")
     public void addPost(@RequestHeader("X-User-ID") String userId, @RequestBody @Validated PostDTO postDTO) {
         Post post = new Post();
@@ -74,11 +82,18 @@ public class PostController {
     @PostMapping("/del")
     public void deletePost(@RequestBody PostIdDTO id) {
         if (!postService.removeById(id.getId())) {
-            throw new BizException(ErrorCode.POST_NOT_FOUND, "Failed to delete post with ID");
+            throw new BizException(ErrorCode.POST_NOT_FOUND, "Post not found with ID: " + id.getId());
         }
-        for (PostTag postTag : postTagService.list(new QueryWrapper<PostTag>().eq("post_id", id.getId()))) {
-            postTagService.removeById(postTag.getId());
-        }
+
+        QueryWrapper<PostTag> queryPostTagWrapper = new QueryWrapper<>();
+        queryPostTagWrapper.eq("post_id", id.getId());
+        postTagService.remove(queryPostTagWrapper);
+
+        QueryWrapper<Reply> queryReplyWrapper = new QueryWrapper<>();
+        queryReplyWrapper.eq("post_id", id.getId());
+        replyService.remove(queryReplyWrapper);
+
+        taskService.delKey(String.valueOf(id.getId()));
     }
 
     @PutMapping("/{id}")
