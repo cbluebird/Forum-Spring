@@ -21,7 +21,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Validated
 @RestController
@@ -36,7 +35,7 @@ public class UpvoteController {
     @Autowired
     private TaskService taskService;
     @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisTemplate<String, Integer> redisTemplate;
     @Autowired
     private UserFeign userFeign;
     @Autowired
@@ -56,8 +55,8 @@ public class UpvoteController {
             upvoteService.save(upvote);
             post.setUpvoteCount(post.getUpvoteCount() + 1);
             postService.updateById(post);
-            redisTemplate.opsForSet().add(RedisKey.USER_POST_UPVOTE + userId, String.valueOf(upvoteDTO.getPostId()));
-            taskService.setData(String.valueOf(upvoteDTO.getPostId()));
+            redisTemplate.opsForSet().add(RedisKey.USER_POST_UPVOTE + userId, upvoteDTO.getPostId());
+            taskService.setData(upvoteDTO.getPostId());
         }
     }
 
@@ -70,21 +69,21 @@ public class UpvoteController {
             upvoteService.remove(queryWrapper);
             post.setUpvoteCount(post.getUpvoteCount() - 1);
             postService.updateById(post);
-            redisTemplate.opsForSet().remove(RedisKey.USER_POST_UPVOTE + userId, String.valueOf(upvoteDTO.getPostId()));
-            taskService.delData(String.valueOf(upvoteDTO.getPostId()));
+            redisTemplate.opsForSet().remove(RedisKey.USER_POST_UPVOTE + userId, upvoteDTO.getPostId());
+            taskService.delData(upvoteDTO.getPostId());
         }
     }
 
     @GetMapping("/upvote/list")
     public Pagination<PostVO> getPostUpvoteList(@RequestHeader("X-User-ID") String userId,
-                                              @RequestParam(name = "pageNum", defaultValue = "1") Long pageNum,
-                                              @RequestParam(name = "pageSize", defaultValue = "10") Long pageSize) {
+                                                @RequestParam(name = "pageNum", defaultValue = "1") Long pageNum,
+                                                @RequestParam(name = "pageSize", defaultValue = "10") Long pageSize) {
         QueryWrapper<Upvote> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_id", userId).orderByDesc("created_on");
         Page<Upvote> upvotePage = upvoteService.page(new Page<>(pageNum, pageSize), queryWrapper);
-        List<Integer> postIds = upvotePage.getRecords().stream().map(Upvote::getPostId).collect(Collectors.toList());
+        List<Integer> postIds = upvotePage.getRecords().stream().map(Upvote::getPostId).toList();
         Long total = upvoteService.count(queryWrapper);
-        Set<String> upvotePostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
+        Set<Integer> upvotePostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
         List<PostVO> postVOs = new ArrayList<>();
         if (upvotePostIds == null) {
             upvotePostIds = new HashSet<>();
@@ -99,32 +98,32 @@ public class UpvoteController {
     @PostMapping("/reply/upvote")
     public void upvoteReply(@RequestHeader("X-User-ID") String userId, @RequestBody ReplyDTO replyDTO) {
         Reply reply = replyService.getById(replyDTO.getReplyId());
-        Set<String> upvoteReplyIds = redisTemplate.opsForSet().members(RedisKey.USER_REPLY_UPVOTE + userId);
+        Set<Integer> upvoteReplyIds = redisTemplate.opsForSet().members(RedisKey.USER_REPLY_UPVOTE + userId);
         if (upvoteReplyIds == null) {
             upvoteReplyIds = new HashSet<>();
         }
-        if (!upvoteReplyIds.contains(String.valueOf(reply.getId()))) {
+        if (!upvoteReplyIds.contains(reply.getId())) {
             reply.setUpvoteCount(reply.getUpvoteCount() + 1);
             replyService.updateById(reply);
-            redisTemplate.opsForSet().add(RedisKey.USER_REPLY_UPVOTE + userId, String.valueOf(replyDTO.getReplyId()));
+            redisTemplate.opsForSet().add(RedisKey.USER_REPLY_UPVOTE + userId, replyDTO.getReplyId());
         }
     }
 
     @PostMapping("/reply/downvote")
     public void downvoteReply(@RequestHeader("X-User-ID") String userId, @RequestBody ReplyDTO replyDTO) {
         Reply reply = replyService.getById(replyDTO.getReplyId());
-        Set<String> upvoteReplyIds = redisTemplate.opsForSet().members(RedisKey.USER_REPLY_UPVOTE + userId);
+        Set<Integer> upvoteReplyIds = redisTemplate.opsForSet().members(RedisKey.USER_REPLY_UPVOTE + userId);
         if (upvoteReplyIds == null) {
             upvoteReplyIds = new HashSet<>();
         }
-        if (upvoteReplyIds.contains(String.valueOf(reply.getId()))) {
+        if (upvoteReplyIds.contains(reply.getId())) {
             reply.setUpvoteCount(reply.getUpvoteCount() - 1);
             replyService.updateById(reply);
-            redisTemplate.opsForSet().remove(RedisKey.USER_REPLY_UPVOTE + userId, String.valueOf(replyDTO.getReplyId()));
+            redisTemplate.opsForSet().remove(RedisKey.USER_REPLY_UPVOTE + userId, replyDTO.getReplyId());
         }
     }
 
-    private void setPage(List<PostVO> postVOs, Set<String> collectedPostIds, Post post) {
+    private void setPage(List<PostVO> postVOs, Set<Integer> collectedPostIds, Post post) {
         PostVO postVO = new PostVO();
         if (post == null) {
             postVOs.add(postVO);
@@ -135,7 +134,7 @@ public class UpvoteController {
         Map<String, Object> userMap = BeanUtil.beanToMap(user);
         postVO.setUserVO(userMap);
         if (collectedPostIds != null) {
-            postVO.setIsCollect(collectedPostIds.contains(String.valueOf(post.getId())));
+            postVO.setIsCollect(collectedPostIds.contains(post.getId()));
         } else {
             postVO.setIsCollect(false);
         }

@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class TaskService {
     @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisTemplate<String, Integer> redisTemplate;
 
     @PostConstruct
     public void init() {
@@ -22,17 +22,17 @@ public class TaskService {
         new Thread(this::refreshData).start();
     }
 
-    public void setData(String postId) {
+    public void setData(Integer postId) {
         long hour = System.currentTimeMillis() / (1000 * 60 * 60);
         redisTemplate.opsForZSet().incrementScore(RedisKey.HOT_POST_HOUR + hour, postId, 1);
     }
 
-    public void delData(String postId) {
+    public void delData(Integer postId) {
         long hour = System.currentTimeMillis() / (1000 * 60 * 60);
         redisTemplate.opsForZSet().incrementScore(RedisKey.HOT_POST_HOUR + hour, postId, -1);
     }
 
-    public void delKey(String postId) {
+    public void delKey(Integer postId) {
         long hour = System.currentTimeMillis() / (1000 * 60 * 60);
         String key = RedisKey.HOT_POST_HOUR + hour;
         if (Boolean.TRUE.equals(redisTemplate.hasKey(key)) && redisTemplate.opsForZSet().score(key, postId) != null) {

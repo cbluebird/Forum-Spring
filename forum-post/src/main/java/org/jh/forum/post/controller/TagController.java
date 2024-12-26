@@ -33,7 +33,7 @@ public class TagController {
     private UserFeign userFeign;
 
     @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisTemplate<String, Integer> redisTemplate;
 
     @Autowired
     private IPostTagService postTagService;
@@ -60,11 +60,11 @@ public class TagController {
         List<Integer> postIds = postTagPage.getRecords().stream().map(PostTag::getPostId).toList();
         Long total = postTagService.count(queryWrapper);
         List<PostVO> postVOs = new ArrayList<>();
-        Set<String> collectedPostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
+        Set<Integer> collectedPostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
         if (collectedPostIds == null) {
             collectedPostIds = new HashSet<>();
         }
-        Set<String> upvotePostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
+        Set<Integer> upvotePostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
         if (upvotePostIds == null) {
             upvotePostIds = new HashSet<>();
         }
@@ -78,19 +78,19 @@ public class TagController {
         return Pagination.of(postVOs, postTagPage.getCurrent(), postTagPage.getSize(), total);
     }
 
-    private void setPage(List<PostVO> postVOs, Set<String> collectedPostIds, Set<String> upvotePostIds, Post post) {
+    private void setPage(List<PostVO> postVOs, Set<Integer> collectedPostIds, Set<Integer> upvotePostIds, Post post) {
         PostVO postVO = new PostVO();
         postVO.setPostVO(post);
         Object user = userFeign.getUserById(post.getUserId());
         Map<String, Object> userMap = BeanUtil.beanToMap(user);
         postVO.setUserVO(userMap);
         if (collectedPostIds != null) {
-            postVO.setIsCollect(collectedPostIds.contains(String.valueOf(post.getId())));
+            postVO.setIsCollect(collectedPostIds.contains(post.getId()));
         } else {
             postVO.setIsCollect(false);
         }
         if (upvotePostIds != null) {
-            postVO.setIsUpvote(upvotePostIds.contains(String.valueOf(post.getId())));
+            postVO.setIsUpvote(upvotePostIds.contains(post.getId()));
         } else {
             postVO.setIsUpvote(false);
         }
