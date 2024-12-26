@@ -24,11 +24,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
-// TODO 根据userid查询用户的帖子列表
 // TODO 删除帖子的同时删除评论
 // TODO 按照tag 查询帖子
 // TODO 热榜-
-// TODO 点赞收藏的响应没有用户信息
 // TODO 查询时候的事务
 // TODO tag热榜
 
