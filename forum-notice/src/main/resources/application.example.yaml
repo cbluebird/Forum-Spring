@@ -25,3 +25,9 @@ spring:
       test-while-idle: true
       test-on-borrow: false
       test-on-return: false
+mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-field: deletedOn
+      logic-delete-value: now()
+      logic-not-delete-value: 'null'
