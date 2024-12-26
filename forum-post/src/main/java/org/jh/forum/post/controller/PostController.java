@@ -24,12 +24,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
-// TODO 删除帖子的同时删除评论
-// TODO 按照tag 查询帖子
-// TODO 热榜-
+
 // TODO 查询时候的事务
 // TODO tag热榜
-
 
 @Validated
 @RestController
@@ -78,6 +75,9 @@ public class PostController {
     public void deletePost(@RequestBody PostIdDTO id) {
         if (!postService.removeById(id.getId())) {
             throw new BizException(ErrorCode.POST_NOT_FOUND, "Failed to delete post with ID");
+        }
+        for (PostTag postTag : postTagService.list(new QueryWrapper<PostTag>().eq("post_id", id.getId()))) {
+            postTagService.removeById(postTag.getId());
         }
     }
 

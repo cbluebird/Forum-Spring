@@ -73,6 +73,7 @@ public class UpvoteController {
             post.setUpvoteCount(post.getUpvoteCount() - 1);
             postService.updateById(post);
             redisTemplate.opsForSet().remove(RedisKey.USER_POST_UPVOTE + userId, String.valueOf(upvoteDTO.getPostId()));
+            taskService.delData(String.valueOf(upvoteDTO.getPostId()));
         }
     }
 

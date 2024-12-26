@@ -85,6 +85,7 @@ public class CollectionController {
             post.setCollectionCount(post.getCollectionCount() - 1);
             postService.updateById(post);
             redisTemplate.opsForSet().remove(RedisKey.USER_COLLECTION + userId, String.valueOf(collectReq.getPostId()));
+            taskService.delData(String.valueOf(collectReq.getPostId()));
         }
     }
 
