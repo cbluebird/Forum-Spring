@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 
 @Validated
@@ -22,7 +21,6 @@ public class NoticeController {
     @PostMapping("/add")
     public void addNotice(@RequestBody Notice notice, @RequestHeader("X-User-ID") String userId) {
         notice.setUserId(Integer.valueOf(userId));
-        notice.setCreatedOn(new Date());
         noticeService.save(notice);
     }
 

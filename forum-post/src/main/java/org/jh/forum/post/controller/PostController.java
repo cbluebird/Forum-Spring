@@ -53,7 +53,6 @@ public class PostController {
         post.setVisibility(postDTO.getVisibility());
         post.setIp(postDTO.getIp());
         post.setIpLoc(postDTO.getIpLoc());
-        post.setCreatedOn(new Date());
 
         postService.save(post);
         Integer postId = post.getId();
@@ -77,7 +76,6 @@ public class PostController {
 
     @PutMapping("/{id}")
     public void updatePost(@RequestBody @Validated Post post) {
-        post.setModifiedOn(new Date());
         if (!postService.updateById(post)) {
             throw new BizException(ErrorCode.POST_UPDATE_FAILED, "Failed to update post with ID: " + post.getId());
         }

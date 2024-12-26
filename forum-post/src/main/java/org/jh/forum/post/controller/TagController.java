@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.Map;
 
 @Validated
@@ -23,7 +22,6 @@ public class TagController {
             Tag tag = new Tag();
             tag.setUserId(Integer.valueOf(userId));
             tag.setTag(tagName);
-            tag.setCreatedOn(new Date());
             tagService.save(tag);
         }
     }

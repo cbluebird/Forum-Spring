@@ -2,7 +2,7 @@ package org.jh.forum.post.model;
 
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 public class Tag {
@@ -10,5 +10,5 @@ public class Tag {
     private Integer userId;
     private String tag;
     private Integer quoteNum;
-    private Date createdOn;
+    private LocalDateTime createdOn;
 }

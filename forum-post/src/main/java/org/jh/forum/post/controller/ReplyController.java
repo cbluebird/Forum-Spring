@@ -31,7 +31,6 @@ public class ReplyController {
     @PostMapping("/add")
     public void addReply(@RequestBody Reply reply, @RequestHeader("X-User-ID") String userId) {
         reply.setUserId(Integer.valueOf(userId));
-        reply.setCreatedOn(new Date());
         if (reply.getRoot() != 0) {
             Reply root = replyService.getById(reply.getRoot());
             root.setReplyCount(root.getReplyCount() + 1);

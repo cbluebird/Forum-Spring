@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import org.jh.forum.post.constant.Visibility;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @TableName("post")
@@ -27,7 +27,7 @@ public class Post {
     private Boolean isSelfTop;
     private String ip;
     private String ipLoc;
-    private Date createdOn;
-    private Date modifiedOn;
-    private Date deletedOn;
+    private LocalDateTime createdOn;
+    private LocalDateTime modifiedOn;
+    private LocalDateTime deletedOn;
 }

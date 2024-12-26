@@ -5,8 +5,8 @@ import org.jh.forum.post.constant.Visibility;
 import org.jh.forum.post.model.Post;
 import org.jh.forum.post.model.Tag;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -26,8 +26,7 @@ public class PostVO {
     private Visibility visibility;
     private String ip;
     private String ipLoc;
-    private Date createdOn;
-    private Date modifiedOn;
+    private LocalDateTime createdOn;
     private List<TagVO> tags;
 
     public void setPostVO(Post post) {
@@ -43,7 +42,6 @@ public class PostVO {
         this.ip = post.getIp();
         this.ipLoc = post.getIpLoc();
         this.createdOn = post.getCreatedOn();
-        this.modifiedOn = post.getModifiedOn();
         this.isCollect = false;
         this.isUpvote = false;
     }

@@ -3,7 +3,7 @@ package org.jh.forum.post.vo;
 import lombok.Data;
 import org.jh.forum.post.model.Reply;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Data
@@ -19,7 +19,7 @@ public class ReplyVO {
     private Boolean isEssence;
     private Integer upvoteCount;
     private Integer replyCount;
-    private Date createdOn;
+    private LocalDateTime createdOn;
     private Boolean isUpvote;
 
     public void setReplyVO(Reply reply) {

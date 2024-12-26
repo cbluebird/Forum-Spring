@@ -18,7 +18,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -48,7 +47,6 @@ public class UpvoteController {
             Upvote upvote = new Upvote();
             upvote.setPostId(upvoteDTO.getPostId());
             upvote.setUserId(Integer.valueOf(userId));
-            upvote.setCreatedOn(new Date());
             upvoteService.save(upvote);
             post.setUpvoteCount(post.getUpvoteCount() + 1);
             postService.updateById(post);
