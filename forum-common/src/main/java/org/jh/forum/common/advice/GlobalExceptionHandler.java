@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.util.List;
@@ -30,16 +31,9 @@ public class GlobalExceptionHandler {
         return Result.fail(ErrorCode.COMMON_PARAM_ERROR, msg);
     }
 
-    @ExceptionHandler(ConstraintViolationException.class)
+    @ExceptionHandler({ConstraintViolationException.class, MissingServletRequestPartException.class, MethodArgumentTypeMismatchException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Result<?> constraintViolationExceptionHandler(ConstraintViolationException e) {
-        log.info("code: {}, msg: {}", ErrorCode.COMMON_PARAM_ERROR.getCode(), e.getMessage());
-        return Result.fail(ErrorCode.COMMON_PARAM_ERROR, e.getMessage());
-    }
-
-    @ExceptionHandler(MissingServletRequestPartException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Result<?> missingServletRequestPartExceptionHandler(MissingServletRequestPartException e) {
+    public Result<?> requestParamExceptionHandler(Exception e) {
         log.info("code: {}, msg: {}", ErrorCode.COMMON_PARAM_ERROR.getCode(), e.getMessage());
         return Result.fail(ErrorCode.COMMON_PARAM_ERROR, e.getMessage());
     }
