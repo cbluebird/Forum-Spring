@@ -9,6 +9,5 @@ public class Tag {
     private Integer id;
     private Integer userId;
     private String tag;
-    private Integer quoteNum;
     private LocalDateTime createdOn;
 }
