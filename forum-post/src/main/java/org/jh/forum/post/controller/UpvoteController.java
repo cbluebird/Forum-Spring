@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jh.forum.common.api.Pagination;
 import org.jh.forum.post.constant.RedisKey;
-import org.jh.forum.post.dto.ReplyUpvoteDTO;
+import org.jh.forum.post.dto.ReplyDTO;
 import org.jh.forum.post.dto.UpvoteDTO;
 import org.jh.forum.post.feign.UserFeign;
 import org.jh.forum.post.model.Post;
@@ -97,8 +97,8 @@ public class UpvoteController {
     }
 
     @PostMapping("/reply/upvote")
-    public void upvoteReply(@RequestHeader("X-User-ID") String userId, @RequestBody ReplyUpvoteDTO replyUpvoteDTO) {
-        Reply reply = replyService.getById(replyUpvoteDTO.getReplyId());
+    public void upvoteReply(@RequestHeader("X-User-ID") String userId, @RequestBody ReplyDTO replyDTO) {
+        Reply reply = replyService.getById(replyDTO.getReplyId());
         Set<String> upvoteReplyIds = redisTemplate.opsForSet().members(RedisKey.USER_REPLY_UPVOTE + userId);
         if (upvoteReplyIds == null) {
             upvoteReplyIds = new HashSet<>();
@@ -106,13 +106,13 @@ public class UpvoteController {
         if (!upvoteReplyIds.contains(String.valueOf(reply.getId()))) {
             reply.setUpvoteCount(reply.getUpvoteCount() + 1);
             replyService.updateById(reply);
-            redisTemplate.opsForSet().add(RedisKey.USER_REPLY_UPVOTE + userId, String.valueOf(replyUpvoteDTO.getReplyId()));
+            redisTemplate.opsForSet().add(RedisKey.USER_REPLY_UPVOTE + userId, String.valueOf(replyDTO.getReplyId()));
         }
     }
 
     @PostMapping("/reply/downvote")
-    public void downvoteReply(@RequestHeader("X-User-ID") String userId, @RequestBody ReplyUpvoteDTO replyUpvoteDTO) {
-        Reply reply = replyService.getById(replyUpvoteDTO.getReplyId());
+    public void downvoteReply(@RequestHeader("X-User-ID") String userId, @RequestBody ReplyDTO replyDTO) {
+        Reply reply = replyService.getById(replyDTO.getReplyId());
         Set<String> upvoteReplyIds = redisTemplate.opsForSet().members(RedisKey.USER_REPLY_UPVOTE + userId);
         if (upvoteReplyIds == null) {
             upvoteReplyIds = new HashSet<>();
@@ -120,7 +120,7 @@ public class UpvoteController {
         if (upvoteReplyIds.contains(String.valueOf(reply.getId()))) {
             reply.setUpvoteCount(reply.getUpvoteCount() - 1);
             replyService.updateById(reply);
-            redisTemplate.opsForSet().remove(RedisKey.USER_REPLY_UPVOTE + userId, String.valueOf(replyUpvoteDTO.getReplyId()));
+            redisTemplate.opsForSet().remove(RedisKey.USER_REPLY_UPVOTE + userId, String.valueOf(replyDTO.getReplyId()));
         }
     }
 

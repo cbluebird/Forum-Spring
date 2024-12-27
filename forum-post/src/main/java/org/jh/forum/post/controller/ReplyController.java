@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.jh.forum.common.api.Pagination;
 import org.jh.forum.post.constant.RedisKey;
+import org.jh.forum.post.dto.ReplyDTO;
 import org.jh.forum.post.feign.UserFeign;
 import org.jh.forum.post.model.Reply;
 import org.jh.forum.post.service.IReplyService;
@@ -36,7 +37,7 @@ public class ReplyController {
             root.setReplyCount(root.getReplyCount() + 1);
             replyService.updateById(root);
         }
-        if (reply.getParent() != 0) {
+        if (reply.getParent() != 0 && !reply.getParent().equals(reply.getRoot())) {
             Reply parent = replyService.getById(reply.getParent());
             parent.setReplyCount(parent.getReplyCount() + 1);
             replyService.updateById(parent);
@@ -44,9 +45,11 @@ public class ReplyController {
         replyService.save(reply);
     }
 
-    @DeleteMapping("/del")
-    public void deleteReply(@RequestParam Integer replyId) {
-        replyService.removeById(replyId);
+    @PostMapping("/del")
+    public void deleteReply(@RequestHeader("X-User-ID") String userId, @RequestBody ReplyDTO replyDTO) {
+        replyService.remove(new QueryWrapper<Reply>().eq("id", replyDTO.getReplyId()).eq("user_id", userId));
+        replyService.remove(new QueryWrapper<Reply>().eq("root", replyDTO.getReplyId()));
+        replyService.remove(new QueryWrapper<Reply>().eq("parent", replyDTO.getReplyId()));
     }
 
     @GetMapping("/get")
