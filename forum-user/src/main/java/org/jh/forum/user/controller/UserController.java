@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.jh.forum.common.api.ErrorCode;
+import org.jh.forum.common.constant.FeignConstant;
 import org.jh.forum.common.exception.BizException;
 import org.jh.forum.user.constant.UserStatus;
 import org.jh.forum.user.constant.UserType;
@@ -74,12 +75,11 @@ public class UserController {
     }
 
     @GetMapping("/username/{username}")
-    public User getUserByUsername(@PathVariable("username") @NotBlank(message = "用户名不能为空") String username) {
-        User user = userService.getOne(new QueryWrapper<User>().eq("username", username));
-        if (user == null) {
-            throw new BizException(ErrorCode.USER_NOT_FOUND);
+    public User getUserByUsername(@RequestHeader(name = FeignConstant.F_REQUEST_ID, required = false) String feignRequestId, @PathVariable("username") @NotBlank(message = "用户名不能为空") String username) {
+        if (feignRequestId == null) {
+            throw new BizException(ErrorCode.COMMON_DISABLE_EXTERNAL_CALL);
         }
-        return user;
+        return userService.getOne(new QueryWrapper<User>().eq("username", username));
     }
 
     @GetMapping("/id/{userId}")
