@@ -34,7 +34,7 @@ public class CollectionController {
     private IPostService postService;
 
     @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisTemplate<String, Integer> redisTemplate;
 
     @Autowired
     private TaskService taskService;
@@ -63,8 +63,8 @@ public class CollectionController {
 
             post.setCollectionCount(post.getCollectionCount() + 1);
             postService.updateById(post);
-            redisTemplate.opsForSet().add(RedisKey.USER_COLLECTION + userId, String.valueOf(collectReq.getPostId()));
-            taskService.setData(String.valueOf(collectReq.getPostId()));
+            redisTemplate.opsForSet().add(RedisKey.USER_COLLECTION + userId, collectReq.getPostId());
+            taskService.setPostData(collectReq.getPostId());
         }
     }
 
@@ -81,8 +81,8 @@ public class CollectionController {
 
             post.setCollectionCount(post.getCollectionCount() - 1);
             postService.updateById(post);
-            redisTemplate.opsForSet().remove(RedisKey.USER_COLLECTION + userId, String.valueOf(collectReq.getPostId()));
-            taskService.delData(String.valueOf(collectReq.getPostId()));
+            redisTemplate.opsForSet().remove(RedisKey.USER_COLLECTION + userId, collectReq.getPostId());
+            taskService.delPostData(collectReq.getPostId());
         }
     }
 
@@ -93,7 +93,7 @@ public class CollectionController {
         Page<Collection> collectionPage = collectionService.page(new Page<>(pageNum, pageSize), queryWrapper);
         List<Integer> postIds = collectionPage.getRecords().stream().map(Collection::getPostId).toList();
         Long total = collectionService.count(queryWrapper);
-        Set<String> collectedPostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
+        Set<Integer> collectedPostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
         List<PostVO> postVOs = new ArrayList<>();
         if (collectedPostIds == null) {
             collectedPostIds = new HashSet<>();
@@ -105,7 +105,7 @@ public class CollectionController {
         return Pagination.of(postVOs, collectionPage.getCurrent(), collectionPage.getSize(), total);
     }
 
-    private void setPage(List<PostVO> postVOs, Set<String> upvotePostIds, Post post) {
+    private void setPage(List<PostVO> postVOs, Set<Integer> upvotePostIds, Post post) {
         PostVO postVO = new PostVO();
         if (post == null) {
             postVOs.add(postVO);
@@ -117,7 +117,7 @@ public class CollectionController {
         postVO.setUserVO(userMap);
         postVO.setIsCollect(true);
         if (upvotePostIds != null) {
-            postVO.setIsUpvote(upvotePostIds.contains(String.valueOf(post.getId())));
+            postVO.setIsUpvote(upvotePostIds.contains(post.getId()));
         } else {
             postVO.setIsUpvote(false);
         }

@@ -15,6 +15,7 @@ import org.jh.forum.post.service.IPostService;
 import org.jh.forum.post.service.IPostTagService;
 import org.jh.forum.post.service.ITagService;
 import org.jh.forum.post.vo.PostVO;
+import org.jh.forum.post.vo.TagVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.validation.annotation.Validated;
@@ -33,7 +34,7 @@ public class TagController {
     private UserFeign userFeign;
 
     @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisTemplate<String, Integer> redisTemplate;
 
     @Autowired
     private IPostTagService postTagService;
@@ -60,11 +61,11 @@ public class TagController {
         List<Integer> postIds = postTagPage.getRecords().stream().map(PostTag::getPostId).toList();
         Long total = postTagService.count(queryWrapper);
         List<PostVO> postVOs = new ArrayList<>();
-        Set<String> collectedPostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
+        Set<Integer> collectedPostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
         if (collectedPostIds == null) {
             collectedPostIds = new HashSet<>();
         }
-        Set<String> upvotePostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
+        Set<Integer> upvotePostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
         if (upvotePostIds == null) {
             upvotePostIds = new HashSet<>();
         }
@@ -78,19 +79,38 @@ public class TagController {
         return Pagination.of(postVOs, postTagPage.getCurrent(), postTagPage.getSize(), total);
     }
 
-    private void setPage(List<PostVO> postVOs, Set<String> collectedPostIds, Set<String> upvotePostIds, Post post) {
+    @GetMapping("/hot/day")
+    public Pagination<TagVO> getHotTagListOfDay(@RequestParam Long pageNum, @RequestParam Long pageSize) {
+        Set<Integer> tagIds = redisTemplate.opsForZSet().reverseRange(RedisKey.HOT_TAG_DAY, (pageNum - 1) * pageSize, pageNum * pageSize - 1);
+        if (tagIds == null) {
+            return Pagination.of(new ArrayList<>(), pageNum, pageSize, 0L);
+        }
+        List<TagVO> tagVOs = new ArrayList<>();
+        for (Integer tagId : tagIds) {
+            Tag tag = tagService.getById(tagId);
+            if (tag == null) {
+                throw new BizException(ErrorCode.POST_TAG_NOT_FOUND, "Tag not found with ID: " + tagId);
+            }
+            TagVO tagVO = new TagVO();
+            BeanUtil.copyProperties(tag, tagVO);
+            tagVOs.add(tagVO);
+        }
+        return Pagination.of(tagVOs, pageNum, pageSize, (long) tagIds.size());
+    }
+
+    private void setPage(List<PostVO> postVOs, Set<Integer> collectedPostIds, Set<Integer> upvotePostIds, Post post) {
         PostVO postVO = new PostVO();
         postVO.setPostVO(post);
         Object user = userFeign.getUserById(post.getUserId());
         Map<String, Object> userMap = BeanUtil.beanToMap(user);
         postVO.setUserVO(userMap);
         if (collectedPostIds != null) {
-            postVO.setIsCollect(collectedPostIds.contains(String.valueOf(post.getId())));
+            postVO.setIsCollect(collectedPostIds.contains(post.getId()));
         } else {
             postVO.setIsCollect(false);
         }
         if (upvotePostIds != null) {
-            postVO.setIsUpvote(upvotePostIds.contains(String.valueOf(post.getId())));
+            postVO.setIsUpvote(upvotePostIds.contains(post.getId()));
         } else {
             postVO.setIsUpvote(false);
         }

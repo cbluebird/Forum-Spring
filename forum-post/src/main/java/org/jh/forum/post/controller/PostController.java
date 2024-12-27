@@ -42,7 +42,7 @@ public class PostController {
     private UserFeign userFeign;
 
     @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisTemplate<String, Integer> redisTemplate;
 
     @Autowired
     private IPostTagService postTagService;
@@ -77,6 +77,8 @@ public class PostController {
                 postTagService.save(postTag);
             }
         }
+        taskService.setPostData(postId);
+        taskService.setTagData(postDTO.getTags());
     }
 
     @PostMapping("/del")
@@ -87,13 +89,18 @@ public class PostController {
 
         QueryWrapper<PostTag> queryPostTagWrapper = new QueryWrapper<>();
         queryPostTagWrapper.eq("post_id", id.getId());
+        Integer[] tagIds = postTagService.list(queryPostTagWrapper).stream().map(PostTag::getTagId).toArray(Integer[]::new);
+        taskService.delTagData(tagIds);
+        for (Integer tagId : tagIds) {
+            redisTemplate.opsForZSet().incrementScore(RedisKey.HOT_TAG_DAY, tagId, -1);
+        }
         postTagService.remove(queryPostTagWrapper);
 
         QueryWrapper<Reply> queryReplyWrapper = new QueryWrapper<>();
         queryReplyWrapper.eq("post_id", id.getId());
         replyService.remove(queryReplyWrapper);
 
-        taskService.delKey(String.valueOf(id.getId()));
+        taskService.delPostKey(id.getId());
     }
 
     @PutMapping("/{id}")
@@ -110,11 +117,11 @@ public class PostController {
         queryWrapper.eq("category_id", categoryId);
         IPage<Post> userPage = postService.page(page, queryWrapper);
         List<PostVO> postVOs = new ArrayList<>();
-        Set<String> upvotePostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
+        Set<Integer> upvotePostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
         if (upvotePostIds == null) {
             upvotePostIds = new HashSet<>();
         }
-        Set<String> collectPostIds = redisTemplate.opsForSet().members(RedisKey.USER_COLLECTION + userId);
+        Set<Integer> collectPostIds = redisTemplate.opsForSet().members(RedisKey.USER_COLLECTION + userId);
         if (collectPostIds == null) {
             collectPostIds = new HashSet<>();
         }
@@ -132,15 +139,16 @@ public class PostController {
         queryWrapper.eq("user_id", authorId);
         IPage<Post> userPage = postService.page(page, queryWrapper);
         List<PostVO> postVOs = new ArrayList<>();
-        Set<String> upvotePostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
+        Set<Integer> upvotePostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
         if (upvotePostIds == null) {
             upvotePostIds = new HashSet<>();
         }
-        Set<String> collectPostIds = redisTemplate.opsForSet().members(RedisKey.USER_COLLECTION + userId);
+        Set<Integer> collectPostIds = redisTemplate.opsForSet().members(RedisKey.USER_COLLECTION + userId);
         if (collectPostIds == null) {
             collectPostIds = new HashSet<>();
         }
         for (Post post : userPage.getRecords()) {
+            setPage(postVOs, collectPostIds, upvotePostIds, post);
             setPage(postVOs, collectPostIds, upvotePostIds, post);
         }
         Long total = postService.count(queryWrapper);
@@ -166,20 +174,20 @@ public class PostController {
 
     @GetMapping("/hot/day")
     public Pagination<PostVO> getHotPostListOfDay(@RequestHeader("X-User-ID") String userId, @RequestParam Long pageNum, @RequestParam Long pageSize) {
-        Set<String> postIds = redisTemplate.opsForZSet().reverseRange(RedisKey.HOT_POST_DAY, (pageNum - 1) * pageSize, pageNum * pageSize - 1);
+        Set<Integer> postIds = redisTemplate.opsForZSet().reverseRange(RedisKey.HOT_POST_DAY, (pageNum - 1) * pageSize, pageNum * pageSize - 1);
         if (postIds == null) {
             return Pagination.of(new ArrayList<>(), pageNum, pageSize, 0L);
         }
         List<PostVO> postVOs = new ArrayList<>();
-        Set<String> upvotePostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
+        Set<Integer> upvotePostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
         if (upvotePostIds == null) {
             upvotePostIds = new HashSet<>();
         }
-        Set<String> collectPostIds = redisTemplate.opsForSet().members(RedisKey.USER_COLLECTION + userId);
+        Set<Integer> collectPostIds = redisTemplate.opsForSet().members(RedisKey.USER_COLLECTION + userId);
         if (collectPostIds == null) {
             collectPostIds = new HashSet<>();
         }
-        for (String postId : postIds) {
+        for (Integer postId : postIds) {
             Post post = postService.getById(postId);
             if (post == null) {
                 throw new BizException(ErrorCode.POST_NOT_FOUND, "Post not found with ID: " + postId);
@@ -189,19 +197,19 @@ public class PostController {
         return Pagination.of(postVOs, pageNum, pageSize, (long) postIds.size());
     }
 
-    private void setPage(List<PostVO> postVOs, Set<String> collectedPostIds, Set<String> upvotePostIds, Post post) {
+    private void setPage(List<PostVO> postVOs, Set<Integer> collectedPostIds, Set<Integer> upvotePostIds, Post post) {
         PostVO postVO = new PostVO();
         postVO.setPostVO(post);
         Object user = userFeign.getUserById(post.getUserId());
         Map<String, Object> userMap = BeanUtil.beanToMap(user);
         postVO.setUserVO(userMap);
         if (collectedPostIds != null) {
-            postVO.setIsCollect(collectedPostIds.contains(String.valueOf(post.getId())));
+            postVO.setIsCollect(collectedPostIds.contains(post.getId()));
         } else {
             postVO.setIsCollect(false);
         }
         if (upvotePostIds != null) {
-            postVO.setIsUpvote(upvotePostIds.contains(String.valueOf(post.getId())));
+            postVO.setIsUpvote(upvotePostIds.contains(post.getId()));
         } else {
             postVO.setIsUpvote(false);
         }

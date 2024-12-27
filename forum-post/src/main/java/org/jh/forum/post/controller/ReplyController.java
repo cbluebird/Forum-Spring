@@ -27,7 +27,7 @@ public class ReplyController {
     private UserFeign userFeign;
 
     @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisTemplate<String, Integer> redisTemplate;
 
     @PostMapping("/add")
     public void addReply(@RequestBody Reply reply, @RequestHeader("X-User-ID") String userId) {
@@ -56,7 +56,7 @@ public class ReplyController {
     public Pagination<ReplyVO> getReplies(@RequestHeader("X-User-ID") String userId, @RequestParam Integer postId) {
         QueryWrapper<Reply> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("post_id", postId).orderByDesc("created_on");
-        Set<String> upvoteReplyIds = redisTemplate.opsForSet().members(RedisKey.USER_REPLY_UPVOTE + userId);
+        Set<Integer> upvoteReplyIds = redisTemplate.opsForSet().members(RedisKey.USER_REPLY_UPVOTE + userId);
         if (upvoteReplyIds == null) {
             upvoteReplyIds = new HashSet<>();
         }
@@ -65,7 +65,7 @@ public class ReplyController {
         for (Reply reply : replies) {
             ReplyVO replyVO = new ReplyVO();
             replyVO.setReplyVO(reply);
-            replyVO.setIsUpvote(upvoteReplyIds.contains(reply.getId().toString()));
+            replyVO.setIsUpvote(upvoteReplyIds.contains(reply.getId()));
             Object user = userFeign.getUserById(reply.getUserId());
             Map<String, Object> userMap = BeanUtil.beanToMap(user);
             replyVO.setUserVO(userMap);
