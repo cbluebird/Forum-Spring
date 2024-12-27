@@ -5,8 +5,8 @@ import lombok.Data;
 
 @Data
 public class CategoryDTO {
-    @NotBlank(message = "分类名称不能为空")
+    @NotBlank(message = "板块名称不能为空")
     private String name;
-    @NotBlank(message = "分类描述不能为空")
+    @NotBlank(message = "板块描述不能为空")
     private String description;
 }
