@@ -34,10 +34,17 @@ public class TaskService {
 
     public void delKey(Integer postId) {
         long hour = System.currentTimeMillis() / (1000 * 60 * 60);
-        String key = RedisKey.HOT_POST_HOUR + hour;
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(key)) && redisTemplate.opsForZSet().score(key, postId) != null) {
-            redisTemplate.opsForZSet().remove(key, postId);
+        List<String> hourKeys = new ArrayList<>();
+        for (int i = 0; i < 24; i++) {
+            String key = RedisKey.HOT_POST_HOUR + (hour - i);
+            hourKeys.add(key);
         }
+        if (!hourKeys.isEmpty()) {
+            for (String key : hourKeys) {
+                redisTemplate.opsForZSet().remove(key, postId);
+            }
+        }
+        redisTemplate.opsForZSet().remove(RedisKey.HOT_POST_DAY, postId);
     }
 
     public void refreshDay() {
