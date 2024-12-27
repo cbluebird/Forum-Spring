@@ -56,7 +56,7 @@ public class UpvoteController {
             post.setUpvoteCount(post.getUpvoteCount() + 1);
             postService.updateById(post);
             redisTemplate.opsForSet().add(RedisKey.USER_POST_UPVOTE + userId, upvoteDTO.getPostId());
-            taskService.setData(upvoteDTO.getPostId());
+            taskService.setPostData(upvoteDTO.getPostId());
         }
     }
 
@@ -70,7 +70,7 @@ public class UpvoteController {
             post.setUpvoteCount(post.getUpvoteCount() - 1);
             postService.updateById(post);
             redisTemplate.opsForSet().remove(RedisKey.USER_POST_UPVOTE + userId, upvoteDTO.getPostId());
-            taskService.delData(upvoteDTO.getPostId());
+            taskService.delPostData(upvoteDTO.getPostId());
         }
     }
 

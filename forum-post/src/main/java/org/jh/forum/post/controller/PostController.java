@@ -77,6 +77,8 @@ public class PostController {
                 postTagService.save(postTag);
             }
         }
+        taskService.setPostData(postId);
+        taskService.setTagData(postDTO.getTags());
     }
 
     @PostMapping("/del")
@@ -87,13 +89,18 @@ public class PostController {
 
         QueryWrapper<PostTag> queryPostTagWrapper = new QueryWrapper<>();
         queryPostTagWrapper.eq("post_id", id.getId());
+        Integer[] tagIds = postTagService.list(queryPostTagWrapper).stream().map(PostTag::getTagId).toArray(Integer[]::new);
+        taskService.delTagData(tagIds);
+        for (Integer tagId : tagIds) {
+            redisTemplate.opsForZSet().incrementScore(RedisKey.HOT_TAG_DAY, tagId, -1);
+        }
         postTagService.remove(queryPostTagWrapper);
 
         QueryWrapper<Reply> queryReplyWrapper = new QueryWrapper<>();
         queryReplyWrapper.eq("post_id", id.getId());
         replyService.remove(queryReplyWrapper);
 
-        taskService.delKey(id.getId());
+        taskService.delPostKey(id.getId());
     }
 
     @PutMapping("/{id}")

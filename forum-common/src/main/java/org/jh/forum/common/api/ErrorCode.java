@@ -30,6 +30,7 @@ public enum ErrorCode {
     POST_NOT_FOUND(20503, "帖子不存在"),
     POST_DELETE_FAILED(20504, "删除帖子失败"),
     POST_UPDATE_FAILED(20505, "更新帖子失败"),
+    POST_TAG_NOT_FOUND(20506, "标签不存在"),
     NOTICE_SERV_ERROR(20600, "NOTICE_SERV异常"),
     OSS_SERV_ERROR(20700, "OSS_SERV异常"),
     OSS_UPLOAD_ERROR(20701, "上传失败"),

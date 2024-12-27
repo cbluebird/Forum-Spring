@@ -64,7 +64,7 @@ public class CollectionController {
             post.setCollectionCount(post.getCollectionCount() + 1);
             postService.updateById(post);
             redisTemplate.opsForSet().add(RedisKey.USER_COLLECTION + userId, collectReq.getPostId());
-            taskService.setData(collectReq.getPostId());
+            taskService.setPostData(collectReq.getPostId());
         }
     }
 
@@ -82,7 +82,7 @@ public class CollectionController {
             post.setCollectionCount(post.getCollectionCount() - 1);
             postService.updateById(post);
             redisTemplate.opsForSet().remove(RedisKey.USER_COLLECTION + userId, collectReq.getPostId());
-            taskService.delData(collectReq.getPostId());
+            taskService.delPostData(collectReq.getPostId());
         }
     }
 
