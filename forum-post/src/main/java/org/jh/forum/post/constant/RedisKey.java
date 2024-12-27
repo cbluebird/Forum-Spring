@@ -6,4 +6,6 @@ public interface RedisKey {
     String USER_COLLECTION = "user:collection:";
     String HOT_POST_HOUR = "hot_post_hour:";
     String HOT_POST_DAY = "hot_post_day";
+    String HOT_TAG_HOUR = "hot_tag_hour:";
+    String HOT_TAG_DAY = "hot_tag_day";
 }
