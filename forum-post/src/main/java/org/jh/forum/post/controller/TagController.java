@@ -14,6 +14,7 @@ import org.jh.forum.post.model.Tag;
 import org.jh.forum.post.service.IPostService;
 import org.jh.forum.post.service.IPostTagService;
 import org.jh.forum.post.service.ITagService;
+import org.jh.forum.post.vo.PostTagVO;
 import org.jh.forum.post.vo.PostVO;
 import org.jh.forum.post.vo.TagVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,19 @@ public class TagController {
             tag.setTag(tagName);
             tagService.save(tag);
         }
+    }
+
+    @GetMapping("/get")
+    public PostTagVO getTagById(@RequestParam Integer tagId) {
+        Tag tag = tagService.getById(tagId);
+        if (tag == null) {
+            throw new BizException(ErrorCode.POST_TAG_NOT_FOUND, "Tag not found with ID: " + tagId);
+        }
+        PostTagVO tagVO = new PostTagVO();
+        tagVO.setId(tag.getId());
+        tagVO.setTag(tag.getTag());
+        tagVO.setCount(postTagService.count(new QueryWrapper<PostTag>().eq("tag_id", tag.getId())));
+        return tagVO;
     }
 
     @GetMapping("/list")

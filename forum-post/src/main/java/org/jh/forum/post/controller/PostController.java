@@ -156,11 +156,19 @@ public class PostController {
     }
 
     @GetMapping("/single/get")
-    public PostVO getSinglePost(@RequestParam Integer postId) {
+    public PostVO getSinglePost(@RequestHeader("X-User-ID") String userId, @RequestParam Integer postId) {
         PostVO postVO = new PostVO();
         Post post = postService.getById(postId);
         if (post == null) {
             throw new BizException(ErrorCode.POST_NOT_FOUND, "Post not found with ID: " + postId);
+        }
+        Set<Integer> upvotePostIds = redisTemplate.opsForSet().members(RedisKey.USER_POST_UPVOTE + userId);
+        if (upvotePostIds == null) {
+            upvotePostIds = new HashSet<>();
+        }
+        Set<Integer> collectPostIds = redisTemplate.opsForSet().members(RedisKey.USER_COLLECTION + userId);
+        if (collectPostIds == null) {
+            collectPostIds = new HashSet<>();
         }
         post.setViewCount(post.getViewCount() + 1);
         postService.updateById(post);
@@ -169,6 +177,8 @@ public class PostController {
         Map<String, Object> userMap = BeanUtil.beanToMap(user);
         postVO.setUserVO(userMap);
         postVO.setTags(tagService.getTagsByPostTags(postTagService.list(new QueryWrapper<PostTag>().eq("post_id", post.getId()))));
+        postVO.setIsCollect(collectPostIds.contains(post.getId()));
+        postVO.setIsUpvote(upvotePostIds.contains(post.getId()));
         return postVO;
     }
 
