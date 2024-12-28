@@ -8,6 +8,6 @@ import java.time.LocalDateTime;
 public class Tag {
     private Integer id;
     private Integer userId;
-    private String tag;
+    private String name;
     private LocalDateTime createdOn;
 }
