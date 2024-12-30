@@ -15,7 +15,6 @@ import org.jh.forum.post.dto.PostDTO;
 import org.jh.forum.post.dto.UserDTO;
 import org.jh.forum.post.feign.UserFeign;
 import org.jh.forum.post.mapper.*;
-import org.jh.forum.post.model.Collection;
 import org.jh.forum.post.model.*;
 import org.jh.forum.post.service.ICategoryService;
 import org.jh.forum.post.service.IPostService;
@@ -52,7 +51,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
     @Autowired
     private UpvoteMapper upvoteMapper;
     @Autowired
-    private CollectionMapper collectionMapper;
+    private CollectMapper collectMapper;
     @Autowired
     private RedisTemplate<String, Integer> redisTemplate;
     @Autowired
@@ -175,18 +174,18 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
 
     @Override
     public Pagination<PostVO> getCollectPostList(String userId, Long pageNum, Long pageSize) {
-        QueryWrapper<org.jh.forum.post.model.Collection> collectionQueryWrapper = new QueryWrapper<org.jh.forum.post.model.Collection>()
+        QueryWrapper<Collect> collectQueryWrapper = new QueryWrapper<Collect>()
                 .eq("user_id", userId)
                 .orderByDesc("created_on");
-        Page<org.jh.forum.post.model.Collection> collectionPage = collectionMapper.selectPage(new Page<>(pageNum, pageSize), collectionQueryWrapper);
-        List<Integer> postIds = collectionPage.getRecords().stream().map(Collection::getPostId).toList();
+        Page<Collect> collectPage = collectMapper.selectPage(new Page<>(pageNum, pageSize), collectQueryWrapper);
+        List<Integer> postIds = collectPage.getRecords().stream().map(Collect::getPostId).toList();
         if (postIds.isEmpty()) {
             return Pagination.of(Collections.emptyList(), pageNum, pageSize, 0L);
         }
         QueryWrapper<Post> postQueryWrapper = new QueryWrapper<Post>()
                 .in("id", postIds);
         Pagination<PostVO> postVOList = getPostList(userId, pageNum, pageSize, postQueryWrapper);
-        postVOList.setTotal(collectionPage.getTotal());
+        postVOList.setTotal(collectPage.getTotal());
         return postVOList;
     }
 
@@ -260,7 +259,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
 
     private Set<Integer> getCollectPostIds(String userId) {
         return Optional.ofNullable(
-                redisTemplate.opsForSet().members(RedisKey.USER_COLLECTION + userId)
+                redisTemplate.opsForSet().members(RedisKey.USER_COLLECT + userId)
         ).orElse(new HashSet<>());
     }
 }

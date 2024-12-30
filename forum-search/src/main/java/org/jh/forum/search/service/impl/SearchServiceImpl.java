@@ -46,7 +46,7 @@ public class SearchServiceImpl implements ISearchService {
                 .attributesToCrop(new String[]{"content"})
                 .cropLength(100)
                 .attributesToHighlight(new String[]{"content"})
-                .attributesToRetrieve(new String[]{"id", "user_id", "title", "content", "view_count", "upvote_count", "reply_count", "collection_count", "share_count", "ip", "ip_loc", "modified_on"})
+                .attributesToRetrieve(new String[]{"id", "user_id", "title", "content", "view_count", "upvote_count", "reply_count", "collect_count", "share_count", "ip", "ip_loc", "modified_on"})
                 .build();
         return (SearchResultPaginated) index.search(searchRequest);
     }

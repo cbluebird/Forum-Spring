@@ -7,8 +7,8 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("post_collection")
-public class Collection {
+@TableName("post_collect")
+public class Collect {
     @TableId
     private Integer id;
     private Integer postId;

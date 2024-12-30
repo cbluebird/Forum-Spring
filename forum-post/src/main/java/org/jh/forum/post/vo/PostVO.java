@@ -15,7 +15,7 @@ public class PostVO {
     private Integer viewCount;
     private Integer upvoteCount;
     private Integer replyCount;
-    private Integer collectionCount;
+    private Integer collectCount;
     private Integer shareCount;
     private Boolean isCollect;
     private Boolean isUpvote;
