@@ -49,6 +49,9 @@ public class FeignConfig {
                 Enumeration<String> headerNames = request.getHeaderNames();
                 while (headerNames.hasMoreElements()) {
                     String headerName = headerNames.nextElement();
+                    if ("content-length".equals(headerName)) {
+                        continue;
+                    }
                     requestTemplate.header(headerName, request.getHeader(headerName));
                 }
                 if (request.getHeader(FeignConstant.F_REQUEST_ID) == null) {

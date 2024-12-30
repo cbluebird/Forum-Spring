@@ -10,7 +10,6 @@ import org.jh.forum.common.constant.FeignConstant;
 import org.jh.forum.common.exception.BizException;
 import org.jh.forum.user.constant.UserStatus;
 import org.jh.forum.user.constant.UserType;
-import org.jh.forum.user.dto.UserBatchDTO;
 import org.jh.forum.user.dto.UserDTO;
 import org.jh.forum.user.model.User;
 import org.jh.forum.user.service.IUserService;
@@ -92,12 +91,11 @@ public class UserController {
     }
 
     @PostMapping("/batch-get")
-    public List<User> getUserByIds(@RequestBody @Validated UserBatchDTO userBatchDTO) {
-        List<Integer> userIds = userBatchDTO.getUserIds();
-        List<User> users = userService.listByIds(userIds);
-        if (users.size() != userIds.size()) {
+    public List<User> getUserByIds(@RequestBody List<Integer> ids) {
+        List<User> users = userService.listByIds(ids);
+        if (users.size() != ids.size()) {
             List<Integer> foundUserIds = users.stream().map(User::getId).toList();
-            List<Integer> missingUserIds = userIds.stream().filter(id -> !foundUserIds.contains(id)).toList();
+            List<Integer> missingUserIds = ids.stream().filter(id -> !foundUserIds.contains(id)).toList();
             throw new BizException(ErrorCode.USER_NOT_FOUND, "Missing user IDs: " + missingUserIds);
         }
         return users;

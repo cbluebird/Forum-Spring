@@ -19,7 +19,7 @@ public class Post {
     private Integer viewCount;
     private Integer upvoteCount;
     private Integer replyCount;
-    private Integer collectionCount;
+    private Integer collectCount;
     private Integer shareCount;
     private Visibility visibility;
     private Boolean isTop;
