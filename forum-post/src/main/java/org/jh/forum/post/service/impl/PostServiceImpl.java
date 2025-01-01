@@ -216,6 +216,9 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
     public Pagination<PostVO> getPostList(String userId, Long pageNum, Long pageSize, QueryWrapper<Post> queryWrapper) {
         IPage<Post> postPage = postMapper.selectPage(new Page<>(pageNum, pageSize), queryWrapper);
         List<Post> postList = postPage.getRecords();
+        if (postList.isEmpty()) {
+            return Pagination.of(Collections.emptyList(), pageNum, pageSize, postPage.getTotal());
+        }
         Set<Integer> upvotePostIds = getUpvotePostIds(userId);
         Set<Integer> collectPostIds = getCollectPostIds(userId);
         Set<Integer> userIds = postList.stream().map(Post::getUserId).collect(Collectors.toSet());

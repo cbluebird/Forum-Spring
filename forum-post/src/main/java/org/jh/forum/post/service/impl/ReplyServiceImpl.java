@@ -23,10 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -93,6 +90,9 @@ public class ReplyServiceImpl extends ServiceImpl<ReplyMapper, Reply> implements
                 .eq("post_id", postId)
                 .orderByDesc("created_on")
         );
+        if (replyList.isEmpty()) {
+            return Pagination.of(new ArrayList<>(), 1L, 10L, 0L);
+        }
         Set<Integer> upvoteReplyIds = Optional.ofNullable(
                 redisTemplate.opsForSet().members(RedisKey.USER_REPLY_UPVOTE + userId)
         ).orElse(new HashSet<>());
