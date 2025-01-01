@@ -74,6 +74,20 @@ public class ReplyServiceImpl extends ServiceImpl<ReplyMapper, Reply> implements
         if (!reply.getUserId().equals(Integer.valueOf(userId))) {
             throw new BizException(ErrorCode.COMMON_PERMISSION_ERROR, "用户ID: " + userId + " 无权删除回复ID: " + replyId);
         }
+        if (reply.getRoot() != 0) {
+            Reply root = ensureReplyExist(reply.getRoot());
+            root.setReplyCount(root.getReplyCount() - 1);
+            if (replyMapper.updateById(root) != 1) {
+                throw new SystemException(ErrorCode.DB_MYSQL_ERROR, "更新Root回复ID: " + root.getId() + " 回复数-1失败");
+            }
+            if (!Objects.equals(reply.getRoot(), reply.getParent()) && reply.getParent() != 0) {
+                Reply parent = ensureReplyExist(reply.getParent());
+                parent.setReplyCount(parent.getReplyCount() - 1);
+                if (replyMapper.updateById(parent) != 1) {
+                    throw new SystemException(ErrorCode.DB_MYSQL_ERROR, "更新Parent回复ID: " + parent.getId() + " 回复数-1失败");
+                }
+            }
+        }
         QueryWrapper<Reply> queryWrapper = new QueryWrapper<Reply>()
                 .eq("id", replyId)
                 .or().eq("root", replyId)
