@@ -27,8 +27,8 @@ public class SearchServiceImpl implements ISearchService {
                 .page(1)
                 .hitsPerPage(10)
                 .matchingStrategy(MatchingStrategy.ALL)
-                .attributesToSearchOn(new String[]{"tag"})
-                .attributesToRetrieve(new String[]{"id", "tag"})
+                .attributesToSearchOn(new String[]{"name"})
+                .attributesToRetrieve(new String[]{"id", "name"})
                 .build();
         SearchResultPaginated srp = (SearchResultPaginated) index.search(searchRequest);
         return JSONUtil.toList(JSONUtil.toJsonStr(srp.getHits()), SearchTagVO.class);

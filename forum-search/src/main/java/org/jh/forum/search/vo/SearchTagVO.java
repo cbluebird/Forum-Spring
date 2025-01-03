@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class SearchTagVO {
     private Integer id;
-    private String tag;
+    private String name;
 }
